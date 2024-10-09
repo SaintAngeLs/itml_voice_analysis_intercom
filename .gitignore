@@ -10,8 +10,8 @@ venv/
 .ipynb_checkpoints/
 
 # Ignore data and model files
-data/
-models/
+# data/
+# models/
 
 # OS-specific files
 .DS_Store

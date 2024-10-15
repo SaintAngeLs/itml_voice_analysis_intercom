@@ -1,13 +1,12 @@
 import os
 import numpy as np
-import matplotlib.pyplot as plt
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from PIL import Image
 from sklearn.model_selection import train_test_split
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from model import create_cnn_model
-from PIL import Image  # Importing PIL for resizing
 
 def load_data(spectrogram_dir, target_size=(128, 128)):
-    """Load the spectrogram images, resize them, and return the data and labels."""
+    """Load the spectrogram images from subdirectories, resize them, and return the data and labels."""
     X = []
     y = []
 
@@ -16,25 +15,29 @@ def load_data(spectrogram_dir, target_size=(128, 128)):
 
         # Check if the directory exists
         if not os.path.exists(class_dir):
-            print(f"Directory {class_dir} does not exist. Creating it...")
-            os.makedirs(class_dir)
+            print(f"Directory {class_dir} does not exist.")
+            continue
 
         label = 1 if class_name == 'allowed' else 0  # 1 for allowed (Class 1), 0 for disallowed (Class 0)
 
-        for file_name in os.listdir(class_dir):
-            if file_name.endswith('.png'):
-                image_path = os.path.join(class_dir, file_name)
+        # Traverse through user subdirectories
+        for user_dir in os.listdir(class_dir):
+            user_path = os.path.join(class_dir, user_dir)
+            if os.path.isdir(user_path):  # Ensure it's a directory
+                for file_name in os.listdir(user_path):
+                    if file_name.endswith('_spectrogram.png'):  # Match the spectrogram naming convention
+                        image_path = os.path.join(user_path, file_name)
 
-                # Load image using PIL and resize to target_size
-                image = Image.open(image_path).convert('L')  # Convert to grayscale
-                image = image.resize(target_size, Image.LANCZOS)  # Resize to target size
-                
-                # Convert image to numpy array and normalize
-                image_array = np.array(image) / 255.0
+                        # Load image using PIL and resize to target_size
+                        image = Image.open(image_path).convert('L')  # Convert to grayscale
+                        image = image.resize(target_size, Image.LANCZOS)  # Resize to target size
+                        
+                        # Convert image to numpy array and normalize
+                        image_array = np.array(image) / 255.0
 
-                # Append to data
-                X.append(image_array)
-                y.append(label)
+                        # Append to data
+                        X.append(image_array)
+                        y.append(label)
 
     # Convert lists to numpy arrays
     return np.array(X), np.array(y)
@@ -43,6 +46,10 @@ def load_data(spectrogram_dir, target_size=(128, 128)):
 def main():
     spectrogram_dir = './data/spectrograms'  # Path to the generated spectrograms
     X, y = load_data(spectrogram_dir)
+
+    if len(X) == 0 or len(y) == 0:
+        print("Error: No data found. Please ensure spectrograms are available.")
+        return
 
     # Reshape X to match CNN input shape (e.g., 128x128x1 for grayscale)
     X = X.reshape(-1, 128, 128, 1)
@@ -64,6 +71,9 @@ def main():
 
     # Save the model
     model.save('./models/cnn_model.h5')
+
+    print("Model training completed and saved to './models/cnn_model.h5'.")
+
 
 if __name__ == "__main__":
     main()

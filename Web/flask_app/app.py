@@ -6,19 +6,25 @@ import numpy as np
 import librosa
 import librosa.display
 from sklearn.preprocessing import LabelEncoder
+import matplotlib.pyplot as plt
 
 # Initialize the Flask app
 app = Flask(__name__)
-app.secret_key = "supersecretkey_supersecretkey"
+app.secret_key = "supersecretkey"
 
-# Setup file upload folder
-UPLOAD_FOLDER = '../../data/test_voices'
+# Setup file upload folder (absolute path for better file management)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')  # Create 'uploads' folder for saving audio files
 ALLOWED_EXTENSIONS = {'wav', 'mp3'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# Ensure the upload folder exists and has the right permissions
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 # Load the pre-trained model and label encoder
-model = load_model('../../models/cnn_model.h5')
-label_encoder = np.load('../../models/label_encoder.npy', allow_pickle=True)
+model = load_model(os.path.join(BASE_DIR, '../../models/cnn_model.keras'))
+label_encoder = np.load(os.path.join(BASE_DIR, '../../models/label_encoder.npy'), allow_pickle=True)
 
 # Check if the uploaded file has an allowed extension
 def allowed_file(filename):
@@ -27,12 +33,16 @@ def allowed_file(filename):
 # Function to preprocess the audio and extract features (spectrogram)
 def preprocess_audio(file_path):
     y, sr = librosa.load(file_path, sr=22050)
+    
+    # Create the Mel-spectrogram
     mel_spect = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128)
     mel_spect_db = librosa.power_to_db(mel_spect, ref=np.max)
     
-    # Resize the spectrogram to the shape expected by the model
+    # Resize the spectrogram to the shape expected by the model (128x128)
     mel_spect_db_resized = np.resize(mel_spect_db, (128, 128))
-    mel_spect_db_resized = np.expand_dims(mel_spect_db_resized, axis=(0, -1))  # Add batch and channel dimension
+    
+    # Add batch and channel dimensions to match the input shape of the model
+    mel_spect_db_resized = np.expand_dims(mel_spect_db_resized, axis=(0, -1))
     
     return mel_spect_db_resized
 
@@ -57,7 +67,13 @@ def upload_file():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
+        
+        try:
+            # Save the file
+            file.save(file_path)
+        except Exception as e:
+            flash(f"Error saving file: {e}")
+            return redirect(request.url)
 
         # Preprocess the audio file and run prediction
         preprocessed_audio = preprocess_audio(file_path)

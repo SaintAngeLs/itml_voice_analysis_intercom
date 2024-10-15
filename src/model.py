@@ -1,7 +1,7 @@
 from tensorflow.keras import layers, models
 
-def create_cnn_model(input_shape):
-    """Create a Convolutional Neural Network (CNN) model for voice recognition."""
+def create_cnn_model(input_shape, num_users):
+    """Create a CNN model for user identification."""
     model = models.Sequential()
 
     # 1st Convolutional Layer
@@ -20,11 +20,13 @@ def create_cnn_model(input_shape):
     model.add(layers.Flatten())
     model.add(layers.Dense(128, activation='relu'))
     model.add(layers.Dropout(0.5))  # Add dropout to reduce overfitting
-    model.add(layers.Dense(1, activation='sigmoid'))  # Output layer for binary classification
+
+    # Output layer for multi-class classification (softmax for user identification)
+    model.add(layers.Dense(num_users, activation='softmax'))
 
     # Compile the model
     model.compile(optimizer='adam',
-                  loss='binary_crossentropy',
+                  loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
     
     return model

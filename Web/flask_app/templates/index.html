@@ -16,7 +16,7 @@
     </form>
 
     <h2>Or Record Audio</h2>
-    
+
     <!-- Audio Recording Interface -->
     <button id="start-record-btn" onclick="startRecording()">Start Recording</button>
     <button id="stop-record-btn" onclick="stopRecording()" disabled>Stop Recording</button>
@@ -32,7 +32,7 @@
 
         function startRecording() {
             navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/wav' });
                 mediaRecorder.start();
                 audioChunks = [];
 

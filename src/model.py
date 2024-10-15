@@ -1,32 +1,48 @@
-from tensorflow.keras import layers, models
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, BatchNormalization, Dense, Flatten, Input, Add
+from tensorflow.keras.models import Model
 
-def create_cnn_model(input_shape, num_users):
-    """Create a CNN model for user identification."""
-    model = models.Sequential()
+def residual_block(x, filters, kernel_size=(3, 3)):
+    """A basic residual block with convolutional layers."""
+    shortcut = x  # Save the input tensor
 
-    # 1st Convolutional Layer
-    model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=input_shape))
-    model.add(layers.MaxPooling2D((2, 2)))
+    # First convolutional layer
+    x = Conv2D(filters, kernel_size, padding='same', activation='relu')(x)
+    x = BatchNormalization()(x)
 
-    # 2nd Convolutional Layer
-    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-    model.add(layers.MaxPooling2D((2, 2)))
+    # Second convolutional layer
+    x = Conv2D(filters, kernel_size, padding='same', activation='relu')(x)
+    x = BatchNormalization()(x)
 
-    # 3rd Convolutional Layer
-    model.add(layers.Conv2D(128, (3, 3), activation='relu'))
-    model.add(layers.MaxPooling2D((2, 2)))
+    # If the input and output filters are different, apply a 1x1 convolution to the shortcut to match dimensions
+    if shortcut.shape[-1] != filters:
+        shortcut = Conv2D(filters, (1, 1), padding='same')(shortcut)
 
-    # Fully connected layer
-    model.add(layers.Flatten())
-    model.add(layers.Dense(128, activation='relu'))
-    model.add(layers.Dropout(0.5))  # Add dropout to reduce overfitting
+    # Adding the shortcut
+    x = Add()([x, shortcut])
+    return x
 
-    # Output layer for multi-class classification (softmax for user identification)
-    model.add(layers.Dense(num_users, activation='softmax'))
+def create_cnn_model(input_shape, num_classes):
+    inputs = Input(shape=input_shape)
 
-    # Compile the model
-    model.compile(optimizer='adam',
-                  loss='sparse_categorical_crossentropy',
-                  metrics=['accuracy'])
+    # Initial convolutional block
+    x = Conv2D(64, (3, 3), activation='relu', padding='same')(inputs)
+    x = BatchNormalization()(x)
+    x = MaxPooling2D(pool_size=(2, 2))(x)
     
+    # Residual blocks
+    x = residual_block(x, 64)
+    x = MaxPooling2D(pool_size=(2, 2))(x)
+    
+    x = residual_block(x, 128)
+    x = MaxPooling2D(pool_size=(2, 2))(x)
+
+    # Flatten and fully connected layers
+    x = Flatten()(x)
+    x = Dense(256, activation='relu')(x)
+    x = BatchNormalization()(x)
+    x = Dropout(0.5)(x)
+    
+    outputs = Dense(num_classes, activation='softmax')(x)
+    
+    model = Model(inputs=inputs, outputs=outputs)
     return model

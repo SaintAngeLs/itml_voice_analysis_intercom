@@ -131,27 +131,27 @@ def generate_spectrogram(audio_data, sr, output_dir, file_name, segment_idx):
 
     return output_file
 
-def generate_mfcc(audio_data, sr, output_dir, file_name, segment_idx):
-    """Generate MFCC and save it as an image."""
-    mfcc = librosa.feature.mfcc(y=audio_data, sr=sr, n_mfcc=13)
+# def generate_mfcc(audio_data, sr, output_dir, file_name, segment_idx):
+#     """Generate MFCC and save it as an image."""
+#     mfcc = librosa.feature.mfcc(y=audio_data, sr=sr, n_mfcc=13)
     
-    # Create output directory if it does not exist
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+#     # Create output directory if it does not exist
+#     if not os.path.exists(output_dir):
+#         os.makedirs(output_dir)
     
-    # Add segment index to the filename for each segment
-    output_file = os.path.join(output_dir, f"{file_name}_segment_{segment_idx}_mfcc.png")
+#     # Add segment index to the filename for each segment
+#     output_file = os.path.join(output_dir, f"{file_name}_segment_{segment_idx}_mfcc.png")
     
-    # Generate and save the MFCC plot
-    plt.figure(figsize=(10, 4))
-    librosa.display.specshow(mfcc, sr=sr, x_axis='time')
-    plt.colorbar()
-    plt.title('MFCC')
-    plt.tight_layout()
-    plt.savefig(output_file)
-    plt.close()
+#     # Generate and save the MFCC plot
+#     plt.figure(figsize=(10, 4))
+#     librosa.display.specshow(mfcc, sr=sr, x_axis='time')
+#     plt.colorbar()
+#     plt.title('MFCC')
+#     plt.tight_layout()
+#     plt.savefig(output_file)
+#     plt.close()
 
-    return output_file
+#     return output_file
 
 def process_audio_files_by_user(input_dir, output_dir, class_name, max_duration=5, augment=False):
     """Process all audio files in the input directory for a specific class (allowed), with optional augmentation."""
@@ -182,9 +182,9 @@ def process_audio_files_by_user(input_dir, output_dir, class_name, max_duration=
                     # Generate spectrogram and MFCC for each chunk
                     for idx, chunk in enumerate(audio_chunks):
                         spectrogram_file = generate_spectrogram(chunk, sr, user_output_dir, file_name, idx)
-                        mfcc_file = generate_mfcc(chunk, sr, user_output_dir, file_name, idx)
+                        # mfcc_file = generate_mfcc(chunk, sr, user_output_dir, file_name, idx)
                         print(f"Spectrogram for segment {idx} saved to {spectrogram_file}")
-                        print(f"MFCC for segment {idx} saved to {mfcc_file}")
+                        # print(f"MFCC for segment {idx} saved to {mfcc_file}")
 
 def get_allowed_files(allowed_dir):
     """Get the list of allowed voice files from the allowed directory."""
@@ -226,24 +226,58 @@ def process_test_voices(test_dir, allowed_files, output_dir, max_duration=5, aug
             # Generate spectrogram and MFCC for each chunk
             for idx, chunk in enumerate(audio_chunks):
                 spectrogram_file = generate_spectrogram(chunk, sr, output_folder, file_name, idx)
-                mfcc_file = generate_mfcc(chunk, sr, output_folder, file_name, idx)
+                # mfcc_file = generate_mfcc(chunk, sr, output_folder, file_name, idx)
                 print(f"Spectrogram for segment {idx} saved to {spectrogram_file}")
-                print(f"MFCC for segment {idx} saved to {mfcc_file}")
+                # print(f"MFCC for segment {idx} saved to {mfcc_file}")
+
+
+def process_daps_data(daps_dir, output_dir, max_duration=10, augment=False):
+    """Process all audio files from the DAPS dataset and generate spectrograms and MFCCs."""
+    for env_dir in os.listdir(daps_dir):
+        env_path = os.path.join(daps_dir, env_dir)
+        if os.path.isdir(env_path):
+            print(f"Processing environment/device: {env_dir}")
+            
+            # Process each audio file in this environment/device folder
+            for file_name in os.listdir(env_path):
+                if file_name.startswith('._'):
+                    # Skip hidden files or macOS resource fork files
+                    print(f"Skipping hidden file: {file_name}")
+                    continue
+
+                if file_name.endswith('.wav'):
+                    audio_path = os.path.join(env_path, file_name)
+                    print(f"Processing {audio_path}...")
+                    
+                    # Load, denoise, and optionally augment the audio
+                    audio_chunks, sr = load_audio(audio_path, max_duration=max_duration, augment=augment)
+                    
+                    # Save spectrograms and MFCCs for each chunk
+                    for idx, chunk in enumerate(audio_chunks):
+                        spectrogram_file = generate_spectrogram(chunk, sr, output_dir, file_name, idx)
+                        # mfcc_file = generate_mfcc(chunk, sr, output_dir, file_name, idx)
+                        print(f"Spectrogram saved to {spectrogram_file}")
+                        # print(f"MFCC saved to {mfcc_file}")
+
 
 def main():
     # Paths to the voice folders
-    allowed_dir = './data/allowed'  # Directory for allowed voices (user-specific subdirectories)
-    test_dir = './data/test_voices'  # Directory for test voices (for checking if allowed)
-    output_dir = './data/spectrograms'  # Where spectrograms and MFCCs will be saved
-    
+    allowed_dir = './data/allowed'
+    test_dir = './data/test_voices'
+    output_dir = './data/spectrograms'
+    daps_dir = './data/daps_data/daps'  # Path to DAPS data
+
     # Get list of allowed voice files
     allowed_files = get_allowed_files(allowed_dir)
-    
-    # Process allowed voices (save spectrograms and MFCCs in "allowed", categorized by user, with augmentations)
+
+    # Process allowed voices
     process_audio_files_by_user(allowed_dir, output_dir, 'allowed', augment=True)
-    
-    # Process test voices (classify as "allowed" or "disallowed", with augmentations)
+
+    # Process test voices
     process_test_voices(test_dir, allowed_files, output_dir, augment=True)
+
+    # Process DAPS data
+    process_daps_data(daps_dir, output_dir, augment=True)
 
 if __name__ == "__main__":
     main()

@@ -4,64 +4,60 @@ from sklearn.metrics import confusion_matrix
 from tensorflow.keras.models import load_model
 from train import load_data  # Reuse the data loading function from the training script
 
-def calculate_far_frr_multi_class(y_true, y_pred, num_classes):
-    """Calculate False Acceptance Ratio (FAR) and False Rejection Ratio (FRR) for multi-class."""
-    far_list = []
-    frr_list = []
-    
-    # Loop through each class and calculate FAR and FRR
-    for class_index in range(num_classes):
-        # Convert true labels and predictions to binary for this class (1 = class, 0 = not class)
-        y_true_binary = (y_true == class_index).astype(int)
-        y_pred_binary = (y_pred == class_index).astype(int)
-        
-        # Calculate confusion matrix for this class
-        tn, fp, fn, tp = confusion_matrix(y_true_binary, y_pred_binary).ravel()
+def calculate_far_frr_binary(y_true, y_pred):
+    """
+    Calculate False Acceptance Ratio (FAR) and False Rejection Ratio (FRR) for binary classification.
+    FAR is the proportion of negative instances incorrectly classified as positive.
+    FRR is the proportion of positive instances incorrectly classified as negative.
+    """
+    # Ensure that y_true and y_pred are integers
+    y_true = y_true.astype(int)
+    y_pred = y_pred.astype(int)
 
-        # Calculate FAR and FRR
-        far = fp / (fp + tn) if (fp + tn) != 0 else 0  # False Acceptance Ratio
-        frr = fn / (fn + tp) if (fn + tp) != 0 else 0  # False Rejection Ratio
+    # Compute confusion matrix components
+    tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
 
-        far_list.append(far)
-        frr_list.append(frr)
+    # Calculate FAR and FRR
+    far = fp / (fp + tn) if (fp + tn) != 0 else 0  # False Acceptance Ratio
+    frr = fn / (fn + tp) if (fn + tp) != 0 else 0  # False Rejection Ratio
 
-    return far_list, frr_list
+    return far, frr
 
 def main():
     # Load the trained model
-    model = load_model('./models/cnn_model.h5')
+    model = load_model('./models/cnn_model.keras')
 
     # Load the test data
-    test_spectrogram_dir = './data/spectrograms'  # Path to the test data spectrograms
-    X_test, y_test, label_encoder = load_data(test_spectrogram_dir)  # Adjusted to receive three values
+    test_spectrogram_dir = './data/spectrograms'  # Adjust this path if needed
+    X_test, y_test = load_data(test_spectrogram_dir)
 
     # Check if X_test is empty
     if X_test.size == 0:
         print("No test data found. Please ensure that there are spectrograms in the test directory.")
         return
 
-    # Reshape X to match model input shape
-    X_test = X_test.reshape(-1, 128, 128, 1)
-
     # Predict using the trained model
-    y_pred = model.predict(X_test)
-    y_pred = np.argmax(y_pred, axis=1)  # Use argmax to convert probabilities to class predictions
+    y_pred_probs = model.predict(X_test)
+    # Convert probabilities to class labels using threshold 0.5
+    y_pred = (y_pred_probs >= 0.5).astype(int).reshape(-1)
 
-    # Calculate FAR and FRR for multi-class classification
-    num_classes = len(label_encoder.classes_)
-    far_list, frr_list = calculate_far_frr_multi_class(y_test, y_pred, num_classes)
+    # Calculate accuracy
+    accuracy = np.mean(y_pred == y_test)
 
-    for i, class_name in enumerate(label_encoder.classes_):
-        print(f"Class: {class_name}")
-        print(f"False Acceptance Ratio (FAR): {far_list[i]}")
-        print(f"False Rejection Ratio (FRR): {frr_list[i]}")
-        print("------")
+    # Calculate FAR and FRR
+    far, frr = calculate_far_frr_binary(y_test, y_pred)
 
-    # Show which user was identified based on predictions
-    predicted_users = label_encoder.inverse_transform(y_pred)
-    actual_users = label_encoder.inverse_transform(y_test)
-    for actual, predicted in zip(actual_users, predicted_users):
-        print(f"Actual user: {actual}, Predicted user: {predicted}")
+    print(f"Accuracy: {accuracy * 100:.2f}%")
+    print(f"False Acceptance Ratio (FAR): {far * 100:.2f}%")
+    print(f"False Rejection Ratio (FRR): {frr * 100:.2f}%")
+
+    # Print confusion matrix
+    tn, fp, fn, tp = confusion_matrix(y_test.astype(int), y_pred).ravel()
+    print("\nConfusion Matrix:")
+    print(f"True Negatives (TN): {tn}")
+    print(f"False Positives (FP): {fp}")
+    print(f"False Negatives (FN): {fn}")
+    print(f"True Positives (TP): {tp}")
 
 if __name__ == "__main__":
     main()

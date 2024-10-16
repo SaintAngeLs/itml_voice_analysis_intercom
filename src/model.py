@@ -21,7 +21,7 @@ def residual_block(x, filters, kernel_size=(3, 3)):
     x = Add()([x, shortcut])
     return x
 
-def create_cnn_model(input_shape, num_classes):
+def create_cnn_model(input_shape):
     inputs = Input(shape=input_shape)
 
     # Initial convolutional block
@@ -42,7 +42,8 @@ def create_cnn_model(input_shape, num_classes):
     x = BatchNormalization()(x)
     x = Dropout(0.5)(x)
     
-    outputs = Dense(num_classes, activation='softmax')(x)
+    # Binary classification output with sigmoid activation
+    outputs = Dense(1, activation='sigmoid')(x)
     
     model = Model(inputs=inputs, outputs=outputs)
     return model

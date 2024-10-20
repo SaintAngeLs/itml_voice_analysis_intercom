@@ -1,30 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Upload and Recording</title>
+    <title>Upload or Record Audio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        h1, h2 {
+            color: #4CAF50;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            border: 2px solid #4CAF50;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        audio {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #upload-recording-form {
+            margin-top: 20px;
+        }
+
+        #upload-recording-form button {
+            width: 100%;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Upload or Record Audio</h1>
+    <div class="container">
+        <h1>Upload or Record Audio</h1>
 
-    <!-- Audio Upload Form -->
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <label for="file">Upload an audio file (WAV or MP3):</label>
-        <input type="file" name="file" id="file">
-        <button type="submit">Upload</button>
-    </form>
+        <!-- Audio Upload Form -->
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <label for="file">Upload an audio file (WAV or MP3):</label>
+            <input type="file" name="file" id="file" accept=".wav, .mp3">
+            <button type="submit">Upload</button>
+        </form>
 
-    <h2>Or Record Audio</h2>
+        <h2>Or Record Audio</h2>
 
-    <!-- Audio Recording Interface -->
-    <button id="start-record-btn" onclick="startRecording()">Start Recording</button>
-    <button id="stop-record-btn" onclick="stopRecording()" disabled>Stop Recording</button>
-    <audio id="audio-playback" controls></audio>
-    <form id="upload-recording-form" action="/upload" method="post" enctype="multipart/form-data" style="display:none;">
-        <input type="file" name="file" id="recording-file" style="display:none;">
-        <button type="submit">Submit Recording</button>
-    </form>
+        <!-- Audio Recording Interface -->
+        <button id="start-record-btn" onclick="startRecording()">Start Recording</button>
+        <button id="stop-record-btn" class="hidden" onclick="stopRecording()">Stop Recording</button>
+        <audio id="audio-playback" controls class="hidden"></audio>
+
+        <!-- Form to upload the recorded audio -->
+        <form id="upload-recording-form" action="/upload" method="post" enctype="multipart/form-data" class="hidden">
+            <input type="file" name="file" id="recording-file" class="hidden">
+            <button type="submit">Submit Recording</button>
+        </form>
+    </div>
 
     <script>
         let mediaRecorder;
@@ -32,7 +104,7 @@
 
         function startRecording() {
             navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/wav' });
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
                 mediaRecorder.start();
                 audioChunks = [];
 
@@ -41,34 +113,33 @@
                 };
 
                 mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                     const audioUrl = URL.createObjectURL(audioBlob);
                     const audio = document.getElementById('audio-playback');
                     audio.src = audioUrl;
+                    audio.classList.remove('hidden');
 
-                    // Create a file object for the recorded audio
                     const fileInput = document.getElementById('recording-file');
-                    const file = new File([audioBlob], 'recording.wav', { type: 'audio/wav' });
+                    const file = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
 
-                    // Create a DataTransfer object to simulate file selection
                     const dataTransfer = new DataTransfer();
                     dataTransfer.items.add(file);
                     fileInput.files = dataTransfer.files;
 
-                    // Show the form to submit the recording
-                    document.getElementById('upload-recording-form').style.display = 'block';
+                    document.getElementById('upload-recording-form').classList.remove('hidden');
                 };
 
-                document.getElementById('start-record-btn').disabled = true;
-                document.getElementById('stop-record-btn').disabled = false;
+                document.getElementById('start-record-btn').classList.add('hidden');
+                document.getElementById('stop-record-btn').classList.remove('hidden');
             });
         }
 
         function stopRecording() {
             mediaRecorder.stop();
-            document.getElementById('start-record-btn').disabled = false;
-            document.getElementById('stop-record-btn').disabled = true;
+            document.getElementById('start-record-btn').classList.remove('hidden');
+            document.getElementById('stop-record-btn').classList.add('hidden');
         }
     </script>
 </body>
+
 </html>

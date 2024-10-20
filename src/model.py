@@ -1,8 +1,7 @@
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, BatchNormalization, Dense, Flatten, Input, Add
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, BatchNormalization, Dense, Flatten, Input, Add, GlobalAveragePooling2D
 from tensorflow.keras.models import Model
 
 def residual_block(x, filters, kernel_size=(3, 3)):
-    """A basic residual block with convolutional layers."""
     shortcut = x  # Save the input tensor
 
     # First convolutional layer
@@ -13,11 +12,11 @@ def residual_block(x, filters, kernel_size=(3, 3)):
     x = Conv2D(filters, kernel_size, padding='same', activation='relu')(x)
     x = BatchNormalization()(x)
 
-    # If the input and output filters are different, apply a 1x1 convolution to the shortcut to match dimensions
+    # Shortcut adjustment
     if shortcut.shape[-1] != filters:
         shortcut = Conv2D(filters, (1, 1), padding='same')(shortcut)
 
-    # Adding the shortcut
+    # Add the shortcut to the output
     x = Add()([x, shortcut])
     return x
 
@@ -36,13 +35,18 @@ def create_cnn_model(input_shape):
     x = residual_block(x, 128)
     x = MaxPooling2D(pool_size=(2, 2))(x)
 
-    # Flatten and fully connected layers
-    x = Flatten()(x)
+    x = residual_block(x, 256)
+    x = MaxPooling2D(pool_size=(2, 2))(x)
+
+    # GlobalAveragePooling instead of Flatten
+    x = GlobalAveragePooling2D()(x)
+
+    # Dense layers
     x = Dense(256, activation='relu')(x)
     x = BatchNormalization()(x)
     x = Dropout(0.5)(x)
-    
-    # Binary classification output with sigmoid activation
+
+    # Binary classification output
     outputs = Dense(1, activation='sigmoid')(x)
     
     model = Model(inputs=inputs, outputs=outputs)

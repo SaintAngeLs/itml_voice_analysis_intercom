@@ -2,7 +2,6 @@ import os
 import numpy as np
 from PIL import Image
 from sklearn.model_selection import train_test_split
-
 from sklearn.utils.class_weight import compute_sample_weight
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, LearningRateScheduler
@@ -13,7 +12,7 @@ import logging
 import sys
 
 def load_data(spectrogram_dir, target_size=(128, 128)):
-    """Load spectrogram images, resize them, and return the data and binary labels."""
+    """Load spectrogram images from the provided directory."""
     X = []
     y = []
 
@@ -25,24 +24,20 @@ def load_data(spectrogram_dir, target_size=(128, 128)):
             continue
 
         # Traverse through user subdirectories
-        for user_dir in os.listdir(class_dir):
-            user_path = os.path.join(class_dir, user_dir)
-            if os.path.isdir(user_path):  # Ensure it's a directory
-                for file_name in os.listdir(user_path):
-                    # Process spectrogram images
-                    if file_name.endswith('_spectrogram.png'):
-                        image_path = os.path.join(user_path, file_name)
+        for file_name in os.listdir(class_dir):
+            if file_name.endswith('_spectrogram.png'):
+                image_path = os.path.join(class_dir, file_name)
 
-                        # Load image using PIL and resize to target_size
-                        image = Image.open(image_path).convert('L')  # Convert to grayscale
-                        image = image.resize(target_size, Image.LANCZOS)
+                # Load image using PIL and resize to target_size
+                image = Image.open(image_path).convert('L')  # Convert to grayscale
+                image = image.resize(target_size, Image.LANCZOS)
 
-                        # Convert image to numpy array and normalize (0 to 1)
-                        image_array = np.array(image, dtype=np.float32) / 255.0  # Convert to float32
+                # Convert image to numpy array and normalize (0 to 1)
+                image_array = np.array(image, dtype=np.float32) / 255.0  # Convert to float32
 
-                        # Append to data arrays
-                        X.append(image_array)
-                        y.append(1 if class_name == 'allowed' else 0)  # 1 for 'allowed', 0 for 'disallowed'
+                # Append to data arrays
+                X.append(image_array)
+                y.append(1 if class_name == 'allowed' else 0)  # 1 for 'allowed', 0 for 'disallowed'
 
     # Convert lists to numpy arrays
     X = np.array(X, dtype=np.float32)  # Ensure X is float32
@@ -72,7 +67,7 @@ def focal_loss(gamma=2., alpha=0.25):
 
 def scheduler(epoch, lr):
     if epoch > 10:  # After 10 epochs, reduce the learning rate by a factor of 10
-        return lr * 0.1
+        return lr * 0.5
     return lr
 
 def generator_with_weights(datagen, X, y, sample_weights, batch_size=32):
@@ -93,23 +88,24 @@ def generator_with_weights(datagen, X, y, sample_weights, batch_size=32):
 
             yield x_aug_batch, y_aug_batch, sw_batch
 
-
 def main():
-    spectrogram_dir = './data/spectrograms'  # Path to the generated spectrograms
-    X, y = load_data(spectrogram_dir)
+    train_spectrogram_dir = './data/spectrograms/train'  # Path to the training spectrograms
+    test_spectrogram_dir = './data/spectrograms/test'    # Path to the test spectrograms
 
-    if len(X) == 0 or len(y) == 0:
-        print("Error: No data found. Please ensure spectrograms are available.")
+    # Load training and test data
+    X_train, y_train = load_data(train_spectrogram_dir)
+    X_test, y_test = load_data(test_spectrogram_dir)
+
+    if len(X_train) == 0 or len(y_train) == 0:
+        print("Error: No training data found. Please ensure spectrograms are available.")
         return
-
-    # Split data into training and validation sets
-    X_train, X_val, y_train, y_val = train_test_split(
-        X, y, test_size=0.2, random_state=42
-    )
+    if len(X_test) == 0 or len(y_test) == 0:
+        print("Error: No test data found. Please ensure spectrograms are available.")
+        return
 
     # Ensure labels are float32
     y_train = y_train.astype(np.float32)
-    y_val = y_val.astype(np.float32)
+    y_test = y_test.astype(np.float32)
 
     # Calculate class weights to address class imbalance
     num_class_0 = np.sum(y_train.astype(int) == 0)
@@ -129,6 +125,11 @@ def main():
     sample_weights = compute_sample_weight(
         class_weight=class_weights, y=y_train.astype(int)
     )
+
+    class_weights = {
+        0: len(y_train) / np.sum(y_train == 0),
+        1: len(y_train) / np.sum(y_train == 1),
+    }
 
     # Create the CNN model for binary classification
     input_shape = (128, 128, 1)
@@ -174,8 +175,9 @@ def main():
         generator_with_weights(datagen, X_train, y_train, sample_weights),
         steps_per_epoch=steps_per_epoch,
         epochs=50,
-        validation_data=(X_val, y_val),
+        validation_data=(X_test, y_test),
         callbacks=[early_stopping, checkpoint, lr_scheduler],
+        class_weight=class_weights,
     )
 
     # Save the final model

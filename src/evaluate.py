@@ -28,7 +28,7 @@ def main():
     model = load_model('./models/cnn_model.keras')
 
     # Load the test data
-    test_spectrogram_dir = './data/spectrograms'  # Adjust this path if needed
+    test_spectrogram_dir = './data/spectrograms/test'  # Test data directory
     X_test, y_test = load_data(test_spectrogram_dir)
 
     # Check if X_test is empty

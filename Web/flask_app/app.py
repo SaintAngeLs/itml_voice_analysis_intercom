@@ -7,6 +7,7 @@ import librosa
 import librosa.display
 from sklearn.preprocessing import LabelEncoder
 import matplotlib.pyplot as plt
+from pydub import AudioSegment  # For webm to wav conversion
 
 # Initialize the Flask app
 app = Flask(__name__)
@@ -15,16 +16,15 @@ app.secret_key = "supersecretkey"
 # Setup file upload folder (absolute path for better file management)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')  # Create 'uploads' folder for saving audio files
-ALLOWED_EXTENSIONS = {'wav', 'mp3'}
+ALLOWED_EXTENSIONS = {'wav', 'mp3', 'webm'}  # Allow webm for recording
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Ensure the upload folder exists and has the right permissions
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Load the pre-trained model and label encoder
+# Load the pre-trained model
 model = load_model(os.path.join(BASE_DIR, '../../models/cnn_model.keras'))
-label_encoder = np.load(os.path.join(BASE_DIR, '../../models/label_encoder.npy'), allow_pickle=True)
 
 # Check if the uploaded file has an allowed extension
 def allowed_file(filename):
@@ -45,6 +45,11 @@ def preprocess_audio(file_path):
     mel_spect_db_resized = np.expand_dims(mel_spect_db_resized, axis=(0, -1))
     
     return mel_spect_db_resized
+
+# Convert webm to wav if necessary
+def convert_webm_to_wav(webm_file_path, wav_file_path):
+    audio = AudioSegment.from_file(webm_file_path, format='webm')
+    audio.export(wav_file_path, format='wav')
 
 # Home route to display the upload form
 @app.route('/')
@@ -69,8 +74,16 @@ def upload_file():
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         
         try:
-            # Save the file
+            # Save the uploaded file
             file.save(file_path)
+            
+            # If it's a webm file, convert to wav
+            if filename.endswith('.webm'):
+                wav_filename = filename.replace('.webm', '.wav')
+                wav_file_path = os.path.join(app.config['UPLOAD_FOLDER'], wav_filename)
+                convert_webm_to_wav(file_path, wav_file_path)
+                file_path = wav_file_path  # Use the WAV file for processing
+                
         except Exception as e:
             flash(f"Error saving file: {e}")
             return redirect(request.url)
@@ -79,15 +92,15 @@ def upload_file():
         preprocessed_audio = preprocess_audio(file_path)
         predictions = model.predict(preprocessed_audio)
         
-        predicted_class = np.argmax(predictions, axis=1)
-        predicted_user = label_encoder[predicted_class[0]]  # Map the predicted class to the user
-        
-        confidence = np.max(predictions) * 100  # Get confidence percentage
+        # For binary classification, get predicted probability for "allowed"
+        predicted_probability = predictions[0][0]
+        predicted_class = 'Allowed' if predicted_probability >= 0.93 else 'Disallowed'
+        confidence = predicted_probability * 100 if predicted_class == 'Allowed' else (1 - predicted_probability) * 100
 
-        return render_template('result.html', filename=filename, result='Allowed', 
-                               confidence=confidence, identified_user=predicted_user)
+        return render_template('result.html', filename=filename, result=predicted_class, 
+                               confidence=confidence)
     else:
-        flash('Invalid file format. Please upload a WAV or MP3 file.')
+        flash('Invalid file format. Please upload a WAV, MP3, or WEBM file.')
         return redirect(request.url)
 
 # Serve uploaded files

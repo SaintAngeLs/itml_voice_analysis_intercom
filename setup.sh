@@ -40,16 +40,16 @@ else
   exit 1
 fi
 
-Main section for the model trainning research
-# Step 4: Data preprocessing
-echo "Starting data preprocessing..."
-python src/data_preprocessing.py
-if [ $? -eq 0 ]; then
-  echo "Data preprocessing completed successfully."
-else
-  echo "Error: Data preprocessing failed." >&2
-  exit 1
-fi
+# Main section for the model trainning research
+# # Step 4: Data preprocessing
+# echo "Starting data preprocessing..."
+# python src/data_preprocessing.py
+# if [ $? -eq 0 ]; then
+#   echo "Data preprocessing completed successfully."
+# else
+#   echo "Error: Data preprocessing failed." >&2
+#   exit 1
+# fi
 
 # Step 5: Model training
 echo "Starting model training..."
@@ -62,14 +62,14 @@ else
 fi
 
 # Step 6: Model evaluation
-echo "Starting model evaluation..."
-python src/evaluate.py
-if [ $? -eq 0 ]; then
-  echo "Model evaluation completed successfully."
-else
-  echo "Error: Model evaluation failed." >&2
-  exit 1
-fi
+# echo "Starting model evaluation..."
+# python src/evaluate.py
+# if [ $? -eq 0 ]; then
+#   echo "Model evaluation completed successfully."
+# else
+#   echo "Error: Model evaluation failed." >&2
+#   exit 1
+# fi
 
 # Step 7: Final message
 echo "Setup, training, and evaluation process completed. You can now check the results and the trained model."

@@ -1,204 +1,98 @@
 import os
+import sys
 import numpy as np
-from PIL import Image
-from sklearn.model_selection import train_test_split
-from sklearn.utils.class_weight import compute_sample_weight
+import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, LearningRateScheduler
 from tensorflow.keras.optimizers import Adam
 from model import create_cnn_model
-import tensorflow as tf
-import logging
-import sys
+from sklearn.utils.class_weight import compute_class_weight
+from sklearn.model_selection import train_test_split
+
+# # Redirect all output (stdout and stderr) to a log file
+# log_file = open(".log", "a")
+# sys.stdout = log_file
+# sys.stderr = log_file
 
 def load_data(spectrogram_dir, target_size=(128, 128)):
-    """Load spectrogram images from the provided directory."""
-    X = []
-    y = []
-
-    for class_name in ['allowed', 'disallowed']:  # Class names
+    """Load spectrogram images from the directory and assign labels based on subdirectories."""
+    X, y = [], []
+    for class_name in ['allowed', 'disallowed']:
         class_dir = os.path.join(spectrogram_dir, class_name)
-
-        if not os.path.exists(class_dir):
-            print(f"Directory {class_dir} does not exist.")
-            continue
-
-        # Traverse through user subdirectories
         for file_name in os.listdir(class_dir):
             if file_name.endswith('_spectrogram.png'):
                 image_path = os.path.join(class_dir, file_name)
-
-                # Load image using PIL and resize to target_size
-                image = Image.open(image_path).convert('L')  # Convert to grayscale
-                image = image.resize(target_size, Image.LANCZOS)
-
-                # Convert image to numpy array and normalize (0 to 1)
-                image_array = np.array(image, dtype=np.float32) / 255.0  # Convert to float32
-
-                # Append to data arrays
+                image = tf.keras.preprocessing.image.load_img(image_path, color_mode='grayscale', target_size=target_size)
+                image_array = tf.keras.preprocessing.image.img_to_array(image) / 255.0
                 X.append(image_array)
-                y.append(1 if class_name == 'allowed' else 0)  # 1 for 'allowed', 0 for 'disallowed'
-
-    # Convert lists to numpy arrays
-    X = np.array(X, dtype=np.float32)  # Ensure X is float32
-    y = np.array(y, dtype=np.float32)  # Ensure y is float32 for binary classification
-
-    # Reshape X to match CNN input shape (batch_size, 128, 128, 1)
-    X = np.expand_dims(X, axis=-1)  # Add a channel dimension
-
-    return X, y
-
-def focal_loss(gamma=2., alpha=0.25):
-    """
-    Focal loss for binary classification.
-    gamma > 0 reduces the relative loss for well-classified examples.
-    alpha balances the importance of different classes.
-    """
-    def focal_loss_fixed(y_true, y_pred):
-        y_true = tf.convert_to_tensor(y_true, tf.float32)
-        y_pred = tf.convert_to_tensor(y_pred, tf.float32)
-
-        cross_entropy_loss = tf.keras.losses.binary_crossentropy(y_true, y_pred)
-        p_t = tf.math.exp(-cross_entropy_loss)  # Probabilities of correct class
-        focal_loss = alpha * tf.pow((1 - p_t), gamma) * cross_entropy_loss
-        return focal_loss
-
-    return focal_loss_fixed
-
-def scheduler(epoch, lr):
-    if epoch > 10:  # After 10 epochs, reduce the learning rate by a factor of 10
-        return lr * 0.5
-    return lr
-
-def generator_with_weights(datagen, X, y, sample_weights, batch_size=32):
-    data_size = len(X)
-    indices = np.arange(data_size)
-    while True:
-        np.random.shuffle(indices)  # Shuffle indices each epoch
-        for start_idx in range(0, data_size, batch_size):
-            end_idx = min(start_idx + batch_size, data_size)
-            batch_indices = indices[start_idx:end_idx]
-            x_batch = X[batch_indices]
-            y_batch = y[batch_indices]
-            sw_batch = sample_weights[batch_indices]
-
-            # Apply data augmentation
-            augmented_gen = datagen.flow(x_batch, y_batch, batch_size=batch_size, shuffle=False)
-            x_aug_batch, y_aug_batch = next(augmented_gen)
-
-            yield x_aug_batch, y_aug_batch, sw_batch
+                y.append(1 if class_name == 'allowed' else 0)
+    return np.array(X), np.array(y)
 
 def main():
-    train_spectrogram_dir = './data/spectrograms/train'  # Path to the training spectrograms
-    test_spectrogram_dir = './data/spectrograms/test'    # Path to the test spectrograms
+    # Load the data from the train directory (no separate test directory)
+    train_dir = './data/spectrograms/train'
+    X, y = load_data(train_dir)
 
-    # Load training and test data
-    X_train, y_train = load_data(train_spectrogram_dir)
-    X_test, y_test = load_data(test_spectrogram_dir)
+    # Convert labels to float32 type to avoid data type issues
+    y = y.astype(np.float32)
 
-    if len(X_train) == 0 or len(y_train) == 0:
-        print("Error: No training data found. Please ensure spectrograms are available.")
-        return
-    if len(X_test) == 0 or len(y_test) == 0:
-        print("Error: No test data found. Please ensure spectrograms are available.")
-        return
+    # Split data into 70% training and 30% testing
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-    # Ensure labels are float32
-    y_train = y_train.astype(np.float32)
-    y_test = y_test.astype(np.float32)
+    # Further split training data into training and validation (80% train, 20% validation from the 70%)
+    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 
-    # Calculate class weights to address class imbalance
-    num_class_0 = np.sum(y_train.astype(int) == 0)
-    num_class_1 = np.sum(y_train.astype(int) == 1)
+    # Compute class weights to handle class imbalance
+    class_weights = compute_class_weight('balanced', classes=np.array([0, 1]), y=y_train)
+    class_weight_dict = dict(enumerate(class_weights))
 
-    if num_class_0 == 0:
-        class_weights = {0: 1, 1: len(y_train) / num_class_1}
-    elif num_class_1 == 0:
-        class_weights = {0: len(y_train) / num_class_0, 1: 1}
-    else:
-        class_weights = {
-            0: len(y_train) / num_class_0,
-            1: len(y_train) / num_class_1,
-        }
+    # Create the CNN model
+    model = create_cnn_model(input_shape=(128, 128, 1))
+    model.compile(optimizer=Adam(0.0001), loss='binary_crossentropy', metrics=['accuracy'])
 
-    # Compute sample weights
-    sample_weights = compute_sample_weight(
-        class_weight=class_weights, y=y_train.astype(int)
-    )
-
-    class_weights = {
-        0: len(y_train) / np.sum(y_train == 0),
-        1: len(y_train) / np.sum(y_train == 1),
-    }
-
-    # Create the CNN model for binary classification
-    input_shape = (128, 128, 1)
-    model = create_cnn_model(input_shape)  # Single output for binary classification
-
-    # Compile the model
-    model.compile(
-        optimizer=Adam(learning_rate=0.001),  # Use Adam optimizer
-        loss='binary_crossentropy',  # Binary crossentropy for binary classification
-        metrics=['accuracy'],
-    )
-
-    lr_scheduler = LearningRateScheduler(scheduler)
-
-    # Data augmentation (optional)
+    # Define ImageDataGenerator for augmentation
     datagen = ImageDataGenerator(
-        rotation_range=20,
-        zoom_range=0.2,
-        horizontal_flip=True,
-        vertical_flip=True,
-        width_shift_range=0.2,
-        height_shift_range=0.2,
-        shear_range=0.2,
-        brightness_range=[0.8, 1.2],
-        fill_mode='nearest',
-    )
+        rotation_range=20, zoom_range=0.2, horizontal_flip=True, fill_mode='nearest')
 
-    datagen.fit(X_train)
+    # Ensure the data and labels are in correct format and shape
+    print(f"X_train shape: {X_train.shape}, y_train shape: {y_train.shape}")
+    print(f"X_val shape: {X_val.shape}, y_val shape: {y_val.shape}")
+
+    # Use tf.data.Dataset to control the input pipeline structure explicitly
+    def data_generator(X, y, batch_size):
+        """Generator to yield batches of data and labels as tf.float32."""
+        dataset = tf.data.Dataset.from_tensor_slices((X, y))
+        dataset = dataset.shuffle(len(y)).batch(batch_size)
+        dataset = dataset.map(lambda X, y: (tf.cast(X, tf.float32), tf.cast(y, tf.float32)))
+        return dataset
+
+    # Create train and validation datasets
+    train_dataset = data_generator(X_train, y_train, batch_size=32)
+    val_dataset = data_generator(X_val, y_val, batch_size=32)
 
     # Callbacks
-    early_stopping = EarlyStopping(
-        monitor='val_loss', patience=10, restore_best_weights=True
-    )
-    checkpoint = ModelCheckpoint(
-        './models/best_cnn_model.keras', monitor='val_loss', save_best_only=True
-    )
+    early_stopping = EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True)
+    checkpoint = ModelCheckpoint('best_model.keras', monitor='val_loss', save_best_only=True)
+    lr_scheduler = LearningRateScheduler(lambda epoch, lr: lr * 0.9 if epoch > 10 else lr)
 
-    # Calculate steps per epoch
-    steps_per_epoch = len(X_train) // 32
-
-    # Train the model with data augmentation and early stopping
-    history = model.fit(
-        generator_with_weights(datagen, X_train, y_train, sample_weights),
-        steps_per_epoch=steps_per_epoch,
+    # Train the model
+    model.fit(
+        train_dataset,  # Training dataset
+        validation_data=val_dataset,  # Validation dataset
         epochs=50,
-        validation_data=(X_test, y_test),
-        callbacks=[early_stopping, checkpoint, lr_scheduler],
-        class_weight=class_weights,
+        class_weight=class_weight_dict,  # Class weights to handle imbalance
+        callbacks=[early_stopping, checkpoint, lr_scheduler]  # Callbacks for early stopping, checkpointing, and learning rate scheduling
     )
 
-    # Save the final model
-    model.save('./models/cnn_model.keras')
+    model.save('final_model.keras')
 
-    print("Model training completed and saved to './models/cnn_model.keras'.")
-
-# Set up logging
-logging.basicConfig(
-    filename='error_log.log',
-    level=logging.DEBUG,
-    format='%(asctime)s %(levelname)s %(message)s',
-    filemode='w',
-)
-
-# Redirect stdout and stderr to the log file
-sys.stdout = open('output_log.log', 'w')
-sys.stderr = sys.stdout
+    # Evaluate the model on the test set
+    test_dataset = data_generator(X_test, y_test, batch_size=32)
+    test_loss, test_acc = model.evaluate(test_dataset)
+    print(f"Test accuracy: {test_acc}, Test loss: {test_loss}")
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        logging.exception("An error occurred during training.")
+    main()
+
+# # Close the log file when the program ends
+# log_file.close()

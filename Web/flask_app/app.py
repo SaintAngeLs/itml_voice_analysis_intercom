@@ -24,7 +24,7 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Load the pre-trained model
-model = load_model(os.path.join(BASE_DIR, '../../models/cnn_model.keras'))
+model = load_model(os.path.join(BASE_DIR, '../../models/best_cnn_model.keras'))
 
 # Check if the uploaded file has an allowed extension
 def allowed_file(filename):
@@ -94,7 +94,7 @@ def upload_file():
         
         # For binary classification, get predicted probability for "allowed"
         predicted_probability = predictions[0][0]
-        predicted_class = 'Allowed' if predicted_probability >= 0.93 else 'Disallowed'
+        predicted_class = 'Allowed' if predicted_probability >= 0.5 else 'Disallowed'
         confidence = predicted_probability * 100 if predicted_class == 'Allowed' else (1 - predicted_probability) * 100
 
         return render_template('result.html', filename=filename, result=predicted_class, 

@@ -1,0 +1,13 @@
+2024-10-20 17:11:06,737 ERROR An error occurred during training.
+Traceback (most recent call last):
+  File "/home/kaliuser/Documents/portfolio/commercial_apps/itml_cs/src/train.py", line 268, in <module>
+    main()
+  File "/home/kaliuser/Documents/portfolio/commercial_apps/itml_cs/src/train.py", line 155, in main
+    X_train, y_train = load_data(train_spectrogram_dir)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kaliuser/Documents/portfolio/commercial_apps/itml_cs/src/train.py", line 71, in load_data
+    print_progress_bar(min(limit, total_files), total_files)
+  File "/home/kaliuser/Documents/portfolio/commercial_apps/itml_cs/src/train.py", line 22, in print_progress_bar
+    progress = current / total
+               ~~~~~~~~^~~~~~~
+ZeroDivisionError: division by zero

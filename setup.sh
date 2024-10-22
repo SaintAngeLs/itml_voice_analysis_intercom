@@ -51,25 +51,25 @@ fi
 #   exit 1
 # fi
 
-# Step 5: Model training
-echo "Starting model training..."
-python src/train.py
-if [ $? -eq 0 ]; then
-  echo "Model training completed successfully."
-else
-  echo "Error: Model training failed." >&2
-  exit 1
-fi
-
-# Step 6: Model evaluation
-# echo "Starting model evaluation..."
-# python src/evaluate.py
+# # Step 5: Model training
+# echo "Starting model training..."
+# python src/train.py
 # if [ $? -eq 0 ]; then
-#   echo "Model evaluation completed successfully."
+#   echo "Model training completed successfully."
 # else
-#   echo "Error: Model evaluation failed." >&2
+#   echo "Error: Model training failed." >&2
 #   exit 1
 # fi
+
+Step 6: Model evaluation
+echo "Starting model evaluation..."
+python src/evaluate.py
+if [ $? -eq 0 ]; then
+  echo "Model evaluation completed successfully."
+else
+  echo "Error: Model evaluation failed." >&2
+  exit 1
+fi
 
 # Step 7: Final message
 echo "Setup, training, and evaluation process completed. You can now check the results and the trained model."

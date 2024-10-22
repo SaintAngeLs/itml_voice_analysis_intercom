@@ -20,7 +20,7 @@ def calculate_far_frr_binary(y_true, y_pred):
 
     return far, frr, tn, fp, fn, tp
 
-def scenario_test(model, X_test, y_test, num_allowed=20, num_disallowed=20):
+def scenario_test(model, X_test, y_test, num_allowed=100, num_disallowed=100):
     """
     Perform a real-scenario test by selecting random allowed and disallowed voices
     and testing the model's prediction on them.

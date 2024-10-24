@@ -54,11 +54,11 @@ def scenario_test(model, X_test, y_test, num_allowed=20, num_disallowed=20):
 
 def main():
     # Load the trained model
-    model = load_model('./final_model_1.keras')
+    model = load_model('./final_model.keras')
 
     # Load the test data
     test_spectrogram_dir = './data/spectrograms/test'  # Test data directory
-    X_test, y_test, _, _ = load_data(test_spectrogram_dir)  # Ignore scripts and effects
+    X_test, y_test = load_data(test_spectrogram_dir)  # Ignore scripts and effects
 
     # Check if X_test is empty
     if X_test.size == 0:

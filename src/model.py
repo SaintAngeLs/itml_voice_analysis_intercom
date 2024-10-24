@@ -2,22 +2,22 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, BatchNormaliz
 from tensorflow.keras.models import Model
 from tensorflow.keras.regularizers import l2
 
-def residual_block(x, filters, kernel_size=(3, 3)):
+def residual_block(x, filters, kernel_size=(3, 3), l2_strength=0.001):
     """Residual block with two convolutional layers."""
     shortcut = x  # Save the input tensor
 
     # First convolutional layer
-    x = Conv2D(filters, kernel_size, padding='same', kernel_regularizer=l2(0.001))(x)
+    x = Conv2D(filters, kernel_size, padding='same', kernel_regularizer=l2(l2_strength))(x)
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
 
     # Second convolutional layer
-    x = Conv2D(filters, kernel_size, padding='same', kernel_regularizer=l2(0.001))(x)
+    x = Conv2D(filters, kernel_size, padding='same', kernel_regularizer=l2(l2_strength))(x)
     x = BatchNormalization()(x)
 
     # Adjust shortcut if needed
     if shortcut.shape[-1] != filters:
-        shortcut = Conv2D(filters, (1, 1), padding='same')(shortcut)
+        shortcut = Conv2D(filters, (1, 1), padding='same', kernel_regularizer=l2(l2_strength))(shortcut)
 
     # Add the shortcut to the output
     x = Add()([x, shortcut])
@@ -35,21 +35,21 @@ def create_cnn_model(input_shape):
     x = Activation('relu')(x)
     x = MaxPooling2D(pool_size=(2, 2))(x)
 
-    # Residual block 1
-    x = residual_block(x, 64)
+    # Residual block 1 (64 filters)
+    x = residual_block(x, 64, l2_strength=0.001)
     x = MaxPooling2D(pool_size=(2, 2))(x)
 
-    # Residual block 2
-    x = residual_block(x, 128)
+    # Residual block 2 (128 filters)
+    x = residual_block(x, 128, l2_strength=0.001)
     x = MaxPooling2D(pool_size=(2, 2))(x)
 
-    # Residual block 3
-    x = residual_block(x, 256)
+    # Residual block 3 (256 filters)
+    x = residual_block(x, 256, l2_strength=0.001)
     x = MaxPooling2D(pool_size=(2, 2))(x)
 
-    # Add more residual blocks if the dataset is large and training time allows it
-    # x = residual_block(x, 512)
-    # x = MaxPooling2D(pool_size=(2, 2))(x)
+    # Residual block 4 (512 filters)
+    x = residual_block(x, 512, l2_strength=0.001)
+    x = MaxPooling2D(pool_size=(2, 2))(x)
 
     # Global Average Pooling (reduces parameter count while keeping spatial info)
     x = GlobalAveragePooling2D()(x)

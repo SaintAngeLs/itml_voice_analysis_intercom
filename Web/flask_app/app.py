@@ -24,7 +24,7 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Load the pre-trained model
-model = load_model(os.path.join(BASE_DIR, '../../final_model.keras'))
+model = load_model(os.path.join(BASE_DIR, '../../models/best_cnn_model.keras'))
 
 # Check if the uploaded file has an allowed extension
 def allowed_file(filename):

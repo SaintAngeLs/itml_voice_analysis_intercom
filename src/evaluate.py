@@ -1,3 +1,46 @@
+"""
+Audio Evaluation Script for Speaker Classification
+
+This script evaluates a trained machine learning model for speaker classification using audio data. 
+It performs tasks such as loading audio files, processing them into mel-spectrograms, predicting classes, 
+and calculating evaluation metrics. The script also includes functionality for scenario testing with specific 
+audio samples, allowing for thorough assessment of the model's performance on various test cases.
+
+Key Components:
+
+- Imports: Essential libraries for audio processing (librosa), numerical operations (numpy), 
+  machine learning model loading (tensorflow), and visualization (matplotlib). It also includes 
+  tools for calculating confusion matrices and evaluation metrics.
+
+- Allowed Speakers:
+  A predefined set of allowed speakers (class_1_speakers) is used to classify audio files into 
+  "allowed" or "disallowed" categories based on the speaker ID extracted from the filename.
+
+- Evaluation Functions:
+  - `calculate_far_frr_binary`: Computes the False Acceptance Ratio (FAR) and False Rejection Ratio (FRR)
+    for binary classification, along with confusion matrix components (TP, TN, FP, FN).
+  - `calculate_general_efficiency_coefficient`: Calculates the General Efficiency Coefficient (GEC) 
+    based on accuracy, FAR, and FRR, using specified weights.
+
+- Audio Processing:
+  - `load_audio_chunk`: Loads an audio file, removes silent sections, and extracts a specified 
+    duration of audio.
+  - `generate_mel_spectrogram`: Generates a mel-spectrogram from the audio data, ensuring it fits a 
+    defined target shape for input into the model.
+
+- Scenario Testing:
+  - `load_random_audio_data_from_livingroom`: Loads random audio samples from a specified directory, 
+    converts them to mel-spectrograms, and ensures consistent shape for the model's input.
+  - `scenario_test`: Tests the model on randomly selected allowed and disallowed samples, outputting 
+    predictions and accuracy information.
+  - `scenario_test_on_audio_with_duration`: Conducts scenario tests using audio files of a specific 
+    duration, predicting classes and evaluating results.
+
+- Main Functionality:
+  - The `main` function orchestrates the evaluation process, loading the trained model, preparing the test 
+    data, evaluating model performance, and printing detailed results.
+"""
+
 import os
 import numpy as np
 import librosa
@@ -14,8 +57,18 @@ class_1_speakers = {'F1', 'F7', 'F8', 'M3', 'M6', 'M8'}
 def calculate_far_frr_binary(y_true, y_pred):
     """
     Calculate False Acceptance Ratio (FAR) and False Rejection Ratio (FRR) for binary classification.
-    FAR is the proportion of disallowed speakers incorrectly classified as allowed.
-    FRR is the proportion of allowed speakers incorrectly classified as disallowed.
+    
+    Parameters:
+    - y_true: Ground truth labels (1 for allowed, 0 for disallowed)
+    - y_pred: Model predictions (1 for allowed, 0 for disallowed)
+    
+    Returns:
+    - FAR: False Acceptance Ratio (disallowed incorrectly classified as allowed)
+    - FRR: False Rejection Ratio (allowed incorrectly classified as disallowed)
+    - tn: True negatives count
+    - fp: False positives count
+    - fn: False negatives count
+    - tp: True positives count
     """
     y_true = y_true.astype(int)
     y_pred = y_pred.astype(int)
@@ -29,13 +82,32 @@ def calculate_far_frr_binary(y_true, y_pred):
 def calculate_general_efficiency_coefficient(accuracy, far, frr, w1=0.4, w2=0.3, w3=0.3):
     """
     Calculate the General Efficiency Coefficient (GEC) as a weighted average of accuracy, (1 - FAR), and (1 - FRR).
+    
+    Parameters:
+    - accuracy: Overall accuracy of the model
+    - far: False Acceptance Ratio
+    - frr: False Rejection Ratio
+    - w1, w2, w3: Weights for accuracy, (1 - FAR), and (1 - FRR), respectively
+    
+    Returns:
+    - gec: Calculated General Efficiency Coefficient
     """
     gec = w1 * accuracy + w2 * (1 - far) + w3 * (1 - frr)
     return gec
 
 def load_audio_chunk(audio_path, sr=22050, duration=10, top_db=30):
     """
-    Load and extract a specific duration (in seconds) from the audio file, trimming silence.
+    Load an audio file, remove silent sections, and extract a specific duration in seconds.
+    
+    Parameters:
+    - audio_path: Path to the audio file
+    - sr: Sample rate to load the audio at
+    - duration: Duration of audio to extract in seconds
+    - top_db: Threshold in decibels for determining silence
+    
+    Returns:
+    - y_nonsilent: Non-silent audio chunk within the specified duration
+    - sr: Sample rate of the loaded audio
     """
     try:
         y, sr = librosa.load(audio_path, sr=sr, duration=duration)
@@ -60,7 +132,17 @@ def load_audio_chunk(audio_path, sr=22050, duration=10, top_db=30):
 
 def generate_mel_spectrogram(audio_data, sr, output_shape=(128, 128), n_mels=128, fmax=8000):
     """
-    Generate a mel-spectrogram from audio data, and ensure the output is padded/truncated to the target shape (128x128).
+    Generate a mel-spectrogram from audio data and ensure it fits the target shape.
+    
+    Parameters:
+    - audio_data: Audio data array
+    - sr: Sample rate of the audio data
+    - output_shape: Desired shape for the output spectrogram (height, width)
+    - n_mels: Number of mel bands
+    - fmax: Maximum frequency for the mel spectrogram
+    
+    Returns:
+    - log_mel_spectrogram: Logarithmic mel-spectrogram with the target shape
     """
     mel_spectrogram = librosa.feature.melspectrogram(y=audio_data, sr=sr, n_mels=n_mels, fmax=fmax)
     log_mel_spectrogram = librosa.power_to_db(mel_spectrogram, ref=np.max)
@@ -78,8 +160,16 @@ def generate_mel_spectrogram(audio_data, sr, output_shape=(128, 128), n_mels=128
 
 def load_random_audio_data_from_livingroom(num_samples=20, livingroom_dir='./data/daps/iphone_livingroom1', output_shape=(128, 128)):
     """
-    Load random audio samples from the living room directory, convert to mel spectrograms,
-    and pad or truncate to ensure consistent shape (128x128).
+    Load random audio samples from a directory, convert to mel-spectrograms, and ensure consistent shape.
+    
+    Parameters:
+    - num_samples: Number of samples to load
+    - livingroom_dir: Directory containing audio files
+    - output_shape: Desired shape for each mel-spectrogram
+    
+    Returns:
+    - X_audio: Array of mel-spectrograms with the specified shape
+    - selected_files: List of filenames corresponding to the loaded samples
     """
     if not os.path.exists(livingroom_dir):
         print(f"Error: Directory {livingroom_dir} does not exist.")
@@ -114,14 +204,28 @@ def load_random_audio_data_from_livingroom(num_samples=20, livingroom_dir='./dat
 
 def extract_speaker_id(filename):
     """
-    Extract the speaker ID from the filename, assuming the format is like 'm3_script5_iphone_livingroom1.wav'.
+    Extract the speaker ID from a filename (e.g., 'M3', 'F1').
+    
+    Parameters:
+    - filename: Name of the audio file (e.g., 'm3_script5_iphone_livingroom1.wav')
+    
+    Returns:
+    - Speaker ID in uppercase format
     """
     return filename.split('_')[0].upper()  # Extract 'M3', 'F1', etc.
 
 def scenario_test_on_audio_with_duration(model, livingroom_dir, num_samples=20, duration=10):
     """
-    Perform a real-scenario test by randomly selecting audio files from the living room,
-    extracting a specific duration (e.g., 10 seconds), and testing the model's predictions on them.
+    Perform a scenario test by selecting audio files of a specific duration, predicting, and evaluating.
+    
+    Parameters:
+    - model: Trained Keras model
+    - livingroom_dir: Directory containing audio files for testing
+    - num_samples: Number of audio files to test
+    - duration: Duration in seconds for each audio sample
+    
+    Returns:
+    - None, prints the test results
     """
     # Load random audio samples of the specified duration from the living room
     X_audio, selected_files = load_random_audio_data_from_livingroom(num_samples=num_samples, livingroom_dir=livingroom_dir)
@@ -167,8 +271,17 @@ def scenario_test_on_audio_with_duration(model, livingroom_dir, num_samples=20, 
 
 def scenario_test(model, X_test, y_test, num_allowed=20, num_disallowed=20):
     """
-    Perform a real-scenario test by selecting random allowed and disallowed voices
-    and testing the model's prediction on them.
+    Perform a test on randomly selected allowed and disallowed samples, outputting predictions.
+    
+    Parameters:
+    - model: Trained Keras model
+    - X_test: Feature data for the test set
+    - y_test: True labels for the test set
+    - num_allowed: Number of allowed samples to test
+    - num_disallowed: Number of disallowed samples to test
+    
+    Returns:
+    - None, prints predictions and accuracy information
     """
     allowed_indices = np.where(y_test == 1)[0]
     disallowed_indices = np.where(y_test == 0)[0]

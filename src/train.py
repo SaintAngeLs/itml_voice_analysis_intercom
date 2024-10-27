@@ -1,3 +1,35 @@
+"""
+Script for Training and Evaluating a CNN Model for Voice-based Access Control Using Spectrograms
+
+This script uses TensorFlow and Keras to load, preprocess, and train a Convolutional Neural Network (CNN) 
+model that classifies audio spectrogram images as "allowed" or "disallowed" for access control purposes. 
+The key components include data loading, image augmentation, handling class imbalance, and model training 
+with several callbacks for optimal performance.
+
+Main Steps:
+1. **Data Loading and Preprocessing**: 
+   - Load spectrogram images from directory, normalize, and label based on subdirectories ("allowed" or "disallowed").
+   - Split data into training, validation, and testing sets.
+   - Implement class balancing to handle imbalanced datasets.
+   
+2. **Model Creation and Compilation**: 
+   - Define a CNN model architecture tailored to image classification.
+   - Compile the model with the Adam optimizer and binary cross-entropy loss.
+
+3. **Training and Validation**: 
+   - Use ImageDataGenerator for data augmentation to improve generalization.
+   - Train the model using training and validation datasets, incorporating various callbacks:
+     - **EarlyStopping**: Stops training if validation loss does not improve.
+     - **ModelCheckpoint**: Saves the best model based on validation loss.
+     - **LearningRateScheduler**: Reduces learning rate after a set number of epochs.
+     - **TensorBoard**: Logs training metrics for visualization.
+
+4. **Evaluation and Saving**: 
+   - Evaluate the model on a separate test dataset and print accuracy and loss.
+   - Save the trained model for future inference.
+
+"""
+
 import os #for file and directory operations
 import sys #to handle system-specific parameters and functions
 import numpy as np #for efficient numerical computations

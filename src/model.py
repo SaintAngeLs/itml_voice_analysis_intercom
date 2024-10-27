@@ -24,7 +24,6 @@ Key Components:
   - Fully Connected Layer: A dense layer with 256 units, batch normalization, and dropout for 
     regularization.
   - Output Layer: A single unit with sigmoid activation for binary classification tasks.
-
 """
 
 ## Import necessary layers and modules from Keras for building the model

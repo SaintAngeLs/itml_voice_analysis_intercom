@@ -40,7 +40,7 @@ def create_cnn_model(input_shape):
     x = MaxPooling2D(pool_size=(2, 2))(x)
 
     # Residual block 2
-    x = residual_block(x, 128)
+    x = residual_block(x, 128) 
     x = MaxPooling2D(pool_size=(2, 2))(x)
 
     # Residual block 3

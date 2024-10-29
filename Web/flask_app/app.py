@@ -24,7 +24,7 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Load the pre-trained model
-model = load_model(os.path.join(BASE_DIR, '../../models/best_cnn_model.keras'))
+model = load_model(os.path.join(BASE_DIR, '../../final_model_2.keras'))
 
 # Check if the uploaded file has an allowed extension
 def allowed_file(filename):
@@ -32,19 +32,29 @@ def allowed_file(filename):
 
 # Function to preprocess the audio and extract features (spectrogram)
 def preprocess_audio(file_path):
+    # Load the audio file
     y, sr = librosa.load(file_path, sr=22050)
-    
-    # Create the Mel-spectrogram
-    mel_spect = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128)
+
+    # Create the Mel-spectrogram with matching parameters
+    mel_spect = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128, fmax=8000)
+
+    # Convert to decibel scale (log scale)
     mel_spect_db = librosa.power_to_db(mel_spect, ref=np.max)
-    
-    # Resize the spectrogram to the shape expected by the model (128x128)
-    mel_spect_db_resized = np.resize(mel_spect_db, (128, 128))
-    
+
+    # Resize the spectrogram to 128x128, pad or truncate as necessary
+    if mel_spect_db.shape[1] < 128:
+        # Pad with zeros if needed
+        padding = 128 - mel_spect_db.shape[1]
+        mel_spect_db = np.pad(mel_spect_db, ((0, 0), (0, padding)), mode='constant')
+    else:
+        # Truncate if necessary
+        mel_spect_db = mel_spect_db[:, :128]
+
     # Add batch and channel dimensions to match the input shape of the model
-    mel_spect_db_resized = np.expand_dims(mel_spect_db_resized, axis=(0, -1))
-    
+    mel_spect_db_resized = np.expand_dims(mel_spect_db, axis=(0, -1))
+
     return mel_spect_db_resized
+
 
 # Convert webm to wav if necessary
 def convert_webm_to_wav(webm_file_path, wav_file_path):

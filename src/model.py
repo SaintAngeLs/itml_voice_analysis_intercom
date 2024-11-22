@@ -1,97 +1,135 @@
-"""
-CNN Model with Residual Blocks
-
-This script defines a Convolutional Neural Network (CNN) architecture utilizing residual blocks to 
-enhance feature learning and enable deeper networks. This model is designed to integrate with a 
-training script for effective end-to-end training and evaluation.
-
-Key Components:
-
-- Imports: Essential Keras layers, models, and regularizers are included for constructing and 
-  regularizing the network.
-
-- Residual Block: 
-  The `residual_block` function implements two convolutional layers with batch normalization and 
-  ReLU activation, along with a shortcut connection to improve gradient flow.
-
-- Model Architecture:
-  - Input Layer: Accepts input data with a specified shape.
-  - Initial Convolutional Block: Consists of a convolutional layer, batch normalization, ReLU 
-    activation, and max pooling for downsampling.
-  - Residual Blocks: Three sequential blocks are included, with filters increasing from 64 to 256, 
-    allowing for the capture of complex features.
-  - Global Average Pooling: Reduces dimensionality while preserving spatial information.
-  - Fully Connected Layer: A dense layer with 256 units, batch normalization, and dropout for 
-    regularization.
-  - Output Layer: A single unit with sigmoid activation for binary classification tasks.
-"""
-
-## Import necessary layers and modules from Keras for building the model
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, BatchNormalization, Dense, Input, Add, GlobalAveragePooling2D, Activation
+from tensorflow.keras.layers import (
+    Conv2D,
+    MaxPooling2D,
+    Dropout,
+    BatchNormalization,
+    Dense,
+    Input,
+    Add,
+    GlobalAveragePooling2D,
+    Activation,
+)
 from tensorflow.keras.models import Model
 from tensorflow.keras.regularizers import l2
 
-def residual_block(x, filters, kernel_size=(3, 3)):
-    """Residual block with two convolutional layers."""
-    shortcut = x  # Save the input tensor
 
-    # First convolutional layer
-    x = Conv2D(filters, kernel_size, padding='same', kernel_regularizer=l2(0.001))(x)
-    x = BatchNormalization()(x) # Apply batch normalization to improve training stability
-    x = Activation('relu')(x) # Use ReLU activation for non-linearity
+class ResidualBlock:
+    """Class to construct a residual block with configurable parameters."""
 
-    # Second convolutional layer
-    x = Conv2D(filters, kernel_size, padding='same', kernel_regularizer=l2(0.001))(x)
-    x = BatchNormalization()(x)  # Apply batch normalization again
+    def __init__(self, filters, kernel_size=(3, 3), regularizer=l2(0.001)):
+        """
+        Initialize ResidualBlock.
 
-    # Adjust shortcut if needed
-    if shortcut.shape[-1] != filters:
-        shortcut = Conv2D(filters, (1, 1), padding='same')(shortcut)  # Match the dimensions
+        Parameters:
+        - filters: Number of filters for the convolutional layers.
+        - kernel_size: Size of the convolutional kernel (default is (3, 3)).
+        - regularizer: Regularizer for the convolutional layers (default is L2 regularization).
+        """
+        self.filters = filters
+        self.kernel_size = kernel_size
+        self.regularizer = regularizer
 
-    # Add the shortcut to the output
-    x = Add()([x, shortcut])
-    x = Activation('relu')(x) # Apply ReLU activation to the combined output
-    
-    return x # Return the output of the residual block
+    def build(self, x):
+        """
+        Build the residual block.
 
-def create_cnn_model(input_shape):
-    """Create a CNN model with residual blocks."""
-    inputs = Input(shape=input_shape)
+        Parameters:
+        - x: Input tensor.
 
-    # Initial convolutional block
-    x = Conv2D(64, (3, 3), padding='same', kernel_regularizer=l2(0.001))(inputs)  # Initial convolution with 64 filters
-    x = BatchNormalization()(x) #Normalize the output
-    x = Activation('relu')(x) #apply ReLu activation
-    x = MaxPooling2D(pool_size=(2, 2))(x) # Downsample the feature maps
+        Returns:
+        - Output tensor after applying the residual block.
+        """
+        shortcut = x
 
-    # Residual block 1
-    x = residual_block(x, 64) # Apply the first residual block with 64 filters
-    x = MaxPooling2D(pool_size=(2, 2))(x) # Downsample again
+        # First convolutional layer
+        x = Conv2D(
+            self.filters, self.kernel_size, padding="same", kernel_regularizer=self.regularizer
+        )(x)
+        x = BatchNormalization()(x)
+        x = Activation("relu")(x)
 
-    # Residual block 2
-    x = residual_block(x, 128) # Apply the second residual block with 128 filters
-    x = MaxPooling2D(pool_size=(2, 2))(x) # Downsample again
+        # Second convolutional layer
+        x = Conv2D(
+            self.filters, self.kernel_size, padding="same", kernel_regularizer=self.regularizer
+        )(x)
+        x = BatchNormalization()(x)
 
-    # Residual block 3
-    x = residual_block(x, 256)  # Apply the third residual block with 256 filters
-    x = MaxPooling2D(pool_size=(2, 2))(x)  # Downsample again
+        # Adjust the shortcut dimensions if necessary
+        if shortcut.shape[-1] != self.filters:
+            shortcut = Conv2D(
+                self.filters, (1, 1), padding="same", kernel_regularizer=self.regularizer
+            )(shortcut)
 
-    # Add more residual blocks if the dataset is large and training time allows it
-    # x = residual_block(x, 512)
-    # x = MaxPooling2D(pool_size=(2, 2))(x)
+        # Combine shortcut and output
+        x = Add()([x, shortcut])
+        x = Activation("relu")(x)
+        return x
 
-    # Global Average Pooling (reduces parameter count while keeping spatial info)
-    x = GlobalAveragePooling2D()(x)
 
-    # Fully connected layer
-    x = Dense(256, activation='relu', kernel_regularizer=l2(0.001))(x)
-    x = BatchNormalization()(x) # Normalize the output
-    x = Dropout(0.7)(x) # Apply dropout for regularization to prevent overfitting
+class CNNModel:
+    """Class to construct the CNN model with residual blocks."""
 
-    # Output layer for binary classification
-    outputs = Dense(1, activation='sigmoid')(x)
+    def __init__(self, input_shape, num_classes=1, dropout_rate=0.7, regularizer=l2(0.001)):
+        """
+        Initialize CNNModel.
 
-    # Define model
-    model = Model(inputs=inputs, outputs=outputs)
-    
-    return model
+        Parameters:
+        - input_shape: Shape of the input data (e.g., (height, width, channels)).
+        - num_classes: Number of output classes (default is 1 for binary classification).
+        - dropout_rate: Dropout rate for the fully connected layers (default is 0.7).
+        - regularizer: Regularizer for convolutional layers (default is L2 regularization).
+        """
+        self.input_shape = input_shape
+        self.num_classes = num_classes
+        self.dropout_rate = dropout_rate
+        self.regularizer = regularizer
+
+    def build(self):
+        """
+        Build the CNN model.
+
+        Returns:
+        - Keras Model object.
+        """
+        inputs = Input(shape=self.input_shape)
+
+        # Initial convolutional block
+        x = Conv2D(
+            64, (3, 3), padding="same", kernel_regularizer=self.regularizer
+        )(inputs)
+        x = BatchNormalization()(x)
+        x = Activation("relu")(x)
+        x = MaxPooling2D(pool_size=(2, 2))(x)
+
+        # Residual blocks
+        x = ResidualBlock(64, regularizer=self.regularizer).build(x)
+        x = MaxPooling2D(pool_size=(2, 2))(x)
+
+        x = ResidualBlock(128, regularizer=self.regularizer).build(x)
+        x = MaxPooling2D(pool_size=(2, 2))(x)
+
+        x = ResidualBlock(256, regularizer=self.regularizer).build(x)
+        x = MaxPooling2D(pool_size=(2, 2))(x)
+
+        # Global Average Pooling
+        x = GlobalAveragePooling2D()(x)
+
+        # Fully connected layer
+        x = Dense(256, activation="relu", kernel_regularizer=self.regularizer)(x)
+        x = BatchNormalization()(x)
+        x = Dropout(self.dropout_rate)(x)
+
+        # Output layer
+        activation = "sigmoid" if self.num_classes == 1 else "softmax"
+        outputs = Dense(self.num_classes, activation=activation)(x)
+
+        # Build the model
+        model = Model(inputs=inputs, outputs=outputs)
+        return model
+
+# This is a modelur component class, the main class caller it ony for demonstration purposes
+# if __name__ == "__main__":
+#     input_shape = (128, 128, 3)  
+#     model_builder = CNNModel(input_shape=input_shape, num_classes=1)
+#     model = model_builder.build()
+#     model.summary()

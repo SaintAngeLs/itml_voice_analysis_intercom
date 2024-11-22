@@ -1,7 +1,7 @@
 import os
 import numpy as np
+import sys
 import tensorflow as tf
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, LearningRateScheduler, TensorBoard
 from tensorflow.keras.optimizers import Adam
 from sklearn.utils.class_weight import compute_class_weight
@@ -11,7 +11,7 @@ from model import CNNModel
 
 
 class DataLoader:
-    """Class to handle loading and preprocessing of spectrogram image data."""
+    """Handles loading and preprocessing of spectrogram image data."""
 
     def __init__(self, spectrogram_dir, target_size=(128, 128)):
         """
@@ -44,15 +44,16 @@ class DataLoader:
                     image_array = tf.keras.preprocessing.image.img_to_array(image) / 255.0
                     X.append(image_array)
                     y.append(1 if class_name == 'allowed' else 0)
-        return np.array(X), np.array(y)
+
+        return np.array(X, dtype=np.float32), np.array(y, dtype=np.float32)
 
 
-class TrainingPipeline:
-    """Class to handle the training and evaluation of the CNN model."""
+class ModelTrainer:
+    """Handles the training and evaluation of a CNN model."""
 
     def __init__(self, model, output_dir="./outputs", log_dir="./logs"):
         """
-        Initialize the TrainingPipeline.
+        Initialize the ModelTrainer.
 
         Parameters:
         - model: The Keras model to train.
@@ -63,22 +64,43 @@ class TrainingPipeline:
         self.output_dir = output_dir
         self.log_dir = log_dir
 
+    @staticmethod
+    def compute_class_weights(y_train):
+        """Compute class weights to handle class imbalance."""
+        class_weights = compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
+        return dict(enumerate(class_weights))
+
+    @staticmethod
+    def prepare_dataset(X, y, batch_size):
+        """
+        Prepare a TensorFlow dataset for training or evaluation.
+
+        Parameters:
+        - X: Input data.
+        - y: Labels.
+        - batch_size: Batch size.
+
+        Returns:
+        - A tf.data.Dataset object.
+        """
+        dataset = tf.data.Dataset.from_tensor_slices((X, y))
+        dataset = dataset.shuffle(buffer_size=len(y)).batch(batch_size)
+        dataset = dataset.map(lambda X, y: (tf.cast(X, tf.float32), tf.cast(y, tf.float32)))
+        return dataset
+
     def setup_callbacks(self):
         """Setup callbacks for training."""
         early_stopping = EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True)
         checkpoint = ModelCheckpoint(
-            os.path.join(self.output_dir, 'best_model.keras'), monitor='val_loss', save_best_only=True
+            filepath=os.path.join(self.output_dir, 'best_model.keras'),
+            monitor='val_loss',
+            save_best_only=True
         )
         lr_scheduler = LearningRateScheduler(lambda epoch, lr: lr * 0.9 if epoch > 10 else lr)
-        tensorboard_callback = TensorBoard(
-            log_dir=os.path.join(self.log_dir, datetime.now().strftime("%Y%m%d-%H%M%S")), histogram_freq=1
-        )
-        return [early_stopping, checkpoint, lr_scheduler, tensorboard_callback]
+        log_dir = os.path.join(self.log_dir, datetime.now().strftime("%Y%m%d-%H%M%S"))
+        tensorboard_callback = TensorBoard(log_dir=log_dir, histogram_freq=1)
 
-    def compute_class_weights(self, y_train):
-        """Compute class weights to handle class imbalance."""
-        class_weights = compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
-        return dict(enumerate(class_weights))
+        return [early_stopping, checkpoint, lr_scheduler, tensorboard_callback]
 
     def train(self, X_train, y_train, X_val, y_val, batch_size=32, epochs=50):
         """
@@ -90,22 +112,23 @@ class TrainingPipeline:
         - batch_size: Batch size for training.
         - epochs: Number of training epochs.
         """
-        # Data augmentation
-        datagen = ImageDataGenerator(
-            rotation_range=20, zoom_range=0.2, horizontal_flip=True, fill_mode='nearest'
-        )
-        train_generator = datagen.flow(X_train, y_train, batch_size=batch_size)
-        val_generator = datagen.flow(X_val, y_val, batch_size=batch_size)
+        # Create datasets
+        train_dataset = self.prepare_dataset(X_train, y_train, batch_size)
+        val_dataset = self.prepare_dataset(X_val, y_val, batch_size)
 
+        # Compute class weights
         class_weights = self.compute_class_weights(y_train)
+
+        # Setup callbacks
         callbacks = self.setup_callbacks()
 
+        # Train the model
         self.model.fit(
-            train_generator,
-            validation_data=val_generator,
+            train_dataset,
+            validation_data=val_dataset,
             epochs=epochs,
             class_weight=class_weights,
-            callbacks=callbacks,
+            callbacks=callbacks
         )
 
     def evaluate(self, X_test, y_test, batch_size=32):
@@ -119,8 +142,8 @@ class TrainingPipeline:
         Returns:
         - Test loss and accuracy.
         """
-        test_generator = tf.data.Dataset.from_tensor_slices((X_test, y_test)).batch(batch_size)
-        test_loss, test_acc = self.model.evaluate(test_generator)
+        test_dataset = self.prepare_dataset(X_test, y_test, batch_size)
+        test_loss, test_acc = self.model.evaluate(test_dataset)
         return test_loss, test_acc
 
 
@@ -128,35 +151,39 @@ def main():
     """Main function to execute the training pipeline."""
     # Directories
     train_dir = './data/spectrograms/train'
-    test_dir = './data/spectrograms/test'
     output_dir = './outputs'
     log_dir = './logs'
 
-    # Data loading
-    data_loader = DataLoader(spectrogram_dir=train_dir)
-    X, y = data_loader.load_data()
-    y = y.astype(np.float32)
+    # Load data
+    loader = DataLoader(spectrogram_dir=train_dir)
+    X, y = loader.load_data()
 
     # Train/Validation/Test split
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 
-    # Model initialization
+    # Initialize model
     model_builder = CNNModel(input_shape=(128, 128, 1), num_classes=1)
     model = model_builder.build()
     model.compile(optimizer=Adam(0.0001), loss='binary_crossentropy', metrics=['accuracy'])
 
-    # Training pipeline
-    pipeline = TrainingPipeline(model=model, output_dir=output_dir, log_dir=log_dir)
-    pipeline.train(X_train, y_train, X_val, y_val, batch_size=32, epochs=50)
+    # Initialize and run training pipeline
+    trainer = ModelTrainer(model=model, output_dir=output_dir, log_dir=log_dir)
+    trainer.train(X_train, y_train, X_val, y_val, batch_size=32, epochs=50)
 
-    # Save the final model
+    # Save final model
     model.save(os.path.join(output_dir, 'final_model.keras'))
 
-    # Evaluation
-    test_loss, test_acc = pipeline.evaluate(X_test, y_test, batch_size=32)
+    # Evaluate the model
+    test_loss, test_acc = trainer.evaluate(X_test, y_test, batch_size=32)
     print(f"Test accuracy: {test_acc}, Test loss: {test_loss}")
 
 
 if __name__ == "__main__":
+    log_file = open("output_log.txt", "a")
+    sys.stdout = log_file
+    sys.stderr = log_file
+
     main()
+
+    log_file.close()

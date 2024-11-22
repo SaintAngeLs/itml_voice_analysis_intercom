@@ -1,137 +1,162 @@
-"""
-Script for Training and Evaluating a CNN Model for Voice-based Access Control Using Spectrograms
-
-This script uses TensorFlow and Keras to load, preprocess, and train a Convolutional Neural Network (CNN) 
-model that classifies audio spectrogram images as "allowed" or "disallowed" for access control purposes. 
-The key components include data loading, image augmentation, handling class imbalance, and model training 
-with several callbacks for optimal performance.
-
-Main Steps:
-1. **Data Loading and Preprocessing**: 
-   - Load spectrogram images from directory, normalize, and label based on subdirectories ("allowed" or "disallowed").
-   - Split data into training, validation, and testing sets.
-   - Implement class balancing to handle imbalanced datasets.
-   
-2. **Model Creation and Compilation**: 
-   - Define a CNN model architecture tailored to image classification.
-   - Compile the model with the Adam optimizer and binary cross-entropy loss.
-
-3. **Training and Validation**: 
-   - Use ImageDataGenerator for data augmentation to improve generalization.
-   - Train the model using training and validation datasets, incorporating various callbacks:
-     - **EarlyStopping**: Stops training if validation loss does not improve.
-     - **ModelCheckpoint**: Saves the best model based on validation loss.
-     - **LearningRateScheduler**: Reduces learning rate after a set number of epochs.
-     - **TensorBoard**: Logs training metrics for visualization.
-
-4. **Evaluation and Saving**: 
-   - Evaluate the model on a separate test dataset and print accuracy and loss.
-   - Save the trained model for future inference.
-"""
+import os
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, LearningRateScheduler, TensorBoard
+from tensorflow.keras.optimizers import Adam
+from sklearn.utils.class_weight import compute_class_weight
+from sklearn.model_selection import train_test_split
+from datetime import datetime
+from model import CNNModel
 
 
-import os #for file and directory operations
-import sys #to handle system-specific parameters and functions
-import numpy as np #for efficient numerical computations
-import tensorflow as tf #a deep learning framework
-from tensorflow.keras.preprocessing.image import ImageDataGenerator #for data augmentation
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, LearningRateScheduler, TensorBoard #for training management
-from tensorflow.keras.optimizers import Adam #imports the Adam optimizer
-from model import create_cnn_model #Imports the CNN model architecture from another script/module
-from sklearn.utils.class_weight import compute_class_weight #to compute class weights for imbalanced datasets
-from sklearn.model_selection import train_test_split #to split data into training and testing sets
-from datetime import datetime  # For timestamping TensorBoard logs
+class DataLoader:
+    """Class to handle loading and preprocessing of spectrogram image data."""
 
-# # Redirect all output (stdout and stderr) to a log file
-# log_file = open(".log", "a")
-# sys.stdout = log_file
-# sys.stderr = log_file
+    def __init__(self, spectrogram_dir, target_size=(128, 128)):
+        """
+        Initialize the DataLoader.
 
-def load_data(spectrogram_dir, target_size=(128, 128)):
-    """Load spectrogram images from the directory and assign labels based on subdirectories."""
-    X, y = [], [] # Initialize empty lists to store images and labels
-    for class_name in ['allowed', 'disallowed']:  # Loop over classes
-        class_dir = os.path.join(spectrogram_dir, class_name)  # Path to each class folder
-        for file_name in os.listdir(class_dir): # Loop over files in the class folder
-            if file_name.endswith('_spectrogram.png'): # Only process spectrogram images
-                image_path = os.path.join(class_dir, file_name) # Full path to the image
-                # Load the image as grayscale with target dimensions and normalize it
-                image = tf.keras.preprocessing.image.load_img(image_path, color_mode='grayscale', target_size=target_size)
-                image_array = tf.keras.preprocessing.image.img_to_array(image) / 255.0 # Convert to array and normalize
-                X.append(image_array) # Append image data to X
-                y.append(1 if class_name == 'allowed' else 0) # Assign label 1 for "allowed", 0 for "disallowed"
-    return np.array(X), np.array(y) # Return images and labels as numpy arrays
+        Parameters:
+        - spectrogram_dir: Directory containing spectrogram images.
+        - target_size: Target size to resize the spectrogram images.
+        """
+        self.spectrogram_dir = spectrogram_dir
+        self.target_size = target_size
+
+    def load_data(self):
+        """
+        Load and preprocess data from the directory.
+
+        Returns:
+        - X: Numpy array of spectrogram images.
+        - y: Numpy array of labels (1 for "allowed", 0 for "disallowed").
+        """
+        X, y = [], []
+        for class_name in ['allowed', 'disallowed']:
+            class_dir = os.path.join(self.spectrogram_dir, class_name)
+            for file_name in os.listdir(class_dir):
+                if file_name.endswith('_spectrogram.png'):
+                    image_path = os.path.join(class_dir, file_name)
+                    image = tf.keras.preprocessing.image.load_img(
+                        image_path, color_mode='grayscale', target_size=self.target_size
+                    )
+                    image_array = tf.keras.preprocessing.image.img_to_array(image) / 255.0
+                    X.append(image_array)
+                    y.append(1 if class_name == 'allowed' else 0)
+        return np.array(X), np.array(y)
+
+
+class TrainingPipeline:
+    """Class to handle the training and evaluation of the CNN model."""
+
+    def __init__(self, model, output_dir="./outputs", log_dir="./logs"):
+        """
+        Initialize the TrainingPipeline.
+
+        Parameters:
+        - model: The Keras model to train.
+        - output_dir: Directory to save trained models and results.
+        - log_dir: Directory to save TensorBoard logs.
+        """
+        self.model = model
+        self.output_dir = output_dir
+        self.log_dir = log_dir
+
+    def setup_callbacks(self):
+        """Setup callbacks for training."""
+        early_stopping = EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True)
+        checkpoint = ModelCheckpoint(
+            os.path.join(self.output_dir, 'best_model.keras'), monitor='val_loss', save_best_only=True
+        )
+        lr_scheduler = LearningRateScheduler(lambda epoch, lr: lr * 0.9 if epoch > 10 else lr)
+        tensorboard_callback = TensorBoard(
+            log_dir=os.path.join(self.log_dir, datetime.now().strftime("%Y%m%d-%H%M%S")), histogram_freq=1
+        )
+        return [early_stopping, checkpoint, lr_scheduler, tensorboard_callback]
+
+    def compute_class_weights(self, y_train):
+        """Compute class weights to handle class imbalance."""
+        class_weights = compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
+        return dict(enumerate(class_weights))
+
+    def train(self, X_train, y_train, X_val, y_val, batch_size=32, epochs=50):
+        """
+        Train the model.
+
+        Parameters:
+        - X_train, y_train: Training data and labels.
+        - X_val, y_val: Validation data and labels.
+        - batch_size: Batch size for training.
+        - epochs: Number of training epochs.
+        """
+        # Data augmentation
+        datagen = ImageDataGenerator(
+            rotation_range=20, zoom_range=0.2, horizontal_flip=True, fill_mode='nearest'
+        )
+        train_generator = datagen.flow(X_train, y_train, batch_size=batch_size)
+        val_generator = datagen.flow(X_val, y_val, batch_size=batch_size)
+
+        class_weights = self.compute_class_weights(y_train)
+        callbacks = self.setup_callbacks()
+
+        self.model.fit(
+            train_generator,
+            validation_data=val_generator,
+            epochs=epochs,
+            class_weight=class_weights,
+            callbacks=callbacks,
+        )
+
+    def evaluate(self, X_test, y_test, batch_size=32):
+        """
+        Evaluate the model on the test set.
+
+        Parameters:
+        - X_test, y_test: Test data and labels.
+        - batch_size: Batch size for evaluation.
+
+        Returns:
+        - Test loss and accuracy.
+        """
+        test_generator = tf.data.Dataset.from_tensor_slices((X_test, y_test)).batch(batch_size)
+        test_loss, test_acc = self.model.evaluate(test_generator)
+        return test_loss, test_acc
+
 
 def main():
-    # Load the data from the train directory (no separate test directory)
+    """Main function to execute the training pipeline."""
+    # Directories
     train_dir = './data/spectrograms/train'
-    X, y = load_data(train_dir) # Load training data and labels
+    test_dir = './data/spectrograms/test'
+    output_dir = './outputs'
+    log_dir = './logs'
 
-    # Convert labels to float32 type to avoid data type issues
+    # Data loading
+    data_loader = DataLoader(spectrogram_dir=train_dir)
+    X, y = data_loader.load_data()
     y = y.astype(np.float32)
 
-    # Split data into 70% training and 30% testing
+    # Train/Validation/Test split
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-
-    # Further split training data into training and validation (80% train, 20% validation from the 70%)
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 
-    # Compute class weights to handle class imbalance
-    class_weights = compute_class_weight('balanced', classes=np.array([0, 1]), y=y_train)
-    class_weight_dict = dict(enumerate(class_weights))
-
-    # Create the CNN model
-    model = create_cnn_model(input_shape=(128, 128, 1))
+    # Model initialization
+    model_builder = CNNModel(input_shape=(128, 128, 1), num_classes=1)
+    model = model_builder.build()
     model.compile(optimizer=Adam(0.0001), loss='binary_crossentropy', metrics=['accuracy'])
 
-    # Define ImageDataGenerator for augmentation
-    datagen = ImageDataGenerator(
-        rotation_range=20, zoom_range=0.2, horizontal_flip=True, fill_mode='nearest')
+    # Training pipeline
+    pipeline = TrainingPipeline(model=model, output_dir=output_dir, log_dir=log_dir)
+    pipeline.train(X_train, y_train, X_val, y_val, batch_size=32, epochs=50)
 
-    # Ensure the data and labels are in correct format and shape
-    print(f"X_train shape: {X_train.shape}, y_train shape: {y_train.shape}")
-    print(f"X_val shape: {X_val.shape}, y_val shape: {y_val.shape}")
+    # Save the final model
+    model.save(os.path.join(output_dir, 'final_model.keras'))
 
-    # Use tf.data.Dataset to control the input pipeline structure explicitly
-    def data_generator(X, y, batch_size):
-        """Generator to yield batches of data and labels as tf.float32."""
-        dataset = tf.data.Dataset.from_tensor_slices((X, y))
-        dataset = dataset.shuffle(len(y)).batch(batch_size)
-        dataset = dataset.map(lambda X, y: (tf.cast(X, tf.float32), tf.cast(y, tf.float32)))
-        return dataset
+    # Evaluation
+    test_loss, test_acc = pipeline.evaluate(X_test, y_test, batch_size=32)
+    print(f"Test accuracy: {test_acc}, Test loss: {test_loss}")
 
-    # Create train and validation datasets
-    train_dataset = data_generator(X_train, y_train, batch_size=32)
-    val_dataset = data_generator(X_val, y_val, batch_size=32)
 
-    # Callbacks
-    early_stopping = EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True)  # Stops training if no improvement
-    checkpoint = ModelCheckpoint('best_model.keras', monitor='val_loss', save_best_only=True) # Saves the best model
-    lr_scheduler = LearningRateScheduler(lambda epoch, lr: lr * 0.9 if epoch > 10 else lr)# Decreases learning rate after epoch 10
-
-    # TensorBoard logging callback
-    log_dir = "./logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S")
-    tensorboard_callback = TensorBoard(log_dir=log_dir, histogram_freq=1) # Logs training metrics to TensorBoard
-
-    # Train the model using the training and validation datasets
-    model.fit(
-        train_dataset,  # Training dataset
-        validation_data=val_dataset,  # Validation dataset
-        epochs=50, #number of training epochs
-        class_weight=class_weight_dict,  # Class weights to handle imbalance
-        callbacks=[early_stopping, checkpoint, lr_scheduler, tensorboard_callback]  # Added TensorBoard callback
-    )
-
-    model.save('final_model_2.keras') #save the final model
-
-    # Evaluate the model on the test set
-    test_dataset = data_generator(X_test, y_test, batch_size=32)
-    test_loss, test_acc = model.evaluate(test_dataset) #Calculates test loss and accuracy
-    print(f"Test accuracy: {test_acc}, Test loss: {test_loss}") # Prints evaluation results
-
-# Main entry point to run the main function if the script is executed directly
-if __name__ == "__main__": 
+if __name__ == "__main__":
     main()
-
-# # Close the log file when the program ends
-# log_file.close()

@@ -1,0 +1,13 @@
+{
+    "config": {
+        "dropout_rate": 0.5,
+        "learning_rate": 0.001,
+        "optimizer": "sgd",
+        "batch_size": 32,
+        "train_test_split_ratio": 0.4,
+        "model_name": "MoreAdvancedCNN"
+    },
+    "roc_auc": 0.49369777509312385,
+    "val_loss": 3.5275819301605225,
+    "val_acc": 0.32871973514556885
+}

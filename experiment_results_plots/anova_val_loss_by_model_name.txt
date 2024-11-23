@@ -1,0 +1,2 @@
+ANOVA Test for val_loss grouped by model_name
+F-statistic: 473.0322, p-value: 1.8221e-49

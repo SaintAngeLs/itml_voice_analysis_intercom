@@ -1,0 +1,13 @@
+{
+    "config": {
+        "dropout_rate": 0.5,
+        "learning_rate": 0.001,
+        "optimizer": "sgd",
+        "batch_size": 64,
+        "train_test_split_ratio": 0.6,
+        "model_name": "BaselineCNN"
+    },
+    "roc_auc": 0.48996885995975403,
+    "val_loss": 1.365343689918518,
+    "val_acc": 0.2604166567325592
+}

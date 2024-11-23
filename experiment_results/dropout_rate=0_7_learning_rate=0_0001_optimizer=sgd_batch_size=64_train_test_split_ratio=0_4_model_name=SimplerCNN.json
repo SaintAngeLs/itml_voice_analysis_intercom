@@ -1,0 +1,13 @@
+{
+    "config": {
+        "dropout_rate": 0.7,
+        "learning_rate": 0.0001,
+        "optimizer": "sgd",
+        "batch_size": 64,
+        "train_test_split_ratio": 0.4,
+        "model_name": "SimplerCNN"
+    },
+    "roc_auc": 0.5208270411758784,
+    "val_loss": 0.8295968174934387,
+    "val_acc": 0.28373703360557556
+}

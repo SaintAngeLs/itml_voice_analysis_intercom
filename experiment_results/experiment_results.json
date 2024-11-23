@@ -1,0 +1,1250 @@
+[
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.4837158965065942,
+        "val_loss": 1.0123860836029053,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.5079221611412769,
+        "val_loss": 1.0491907596588135,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.4859559045605557,
+        "val_loss": 1.0898470878601074,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.4855440513529617,
+        "val_loss": 1.1172457933425903,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.5385331722541026,
+        "val_loss": 1.2096668481826782,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.5035400717232696,
+        "val_loss": 1.2693005800247192,
+        "val_acc": 0.625
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.5075531058089198,
+        "val_loss": 1.2671449184417725,
+        "val_acc": 0.7058823704719543
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.48996885995975403,
+        "val_loss": 1.365343689918518,
+        "val_acc": 0.2604166567325592
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.5183680660424846,
+        "val_loss": 1.2096127271652222,
+        "val_acc": 0.6539792418479919
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.5194248648162513,
+        "val_loss": 1.1624687910079956,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.4843224604852512,
+        "val_loss": 1.410027027130127,
+        "val_acc": 0.28373703360557556
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.5021865479522893,
+        "val_loss": 1.163074254989624,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.537617034128662,
+        "val_loss": 1.2183271646499634,
+        "val_acc": 0.7093425393104553
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.5029408788910998,
+        "val_loss": 1.2545459270477295,
+        "val_acc": 0.6979166865348816
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.4705703211517165,
+        "val_loss": 1.293736219406128,
+        "val_acc": 0.4740484356880188
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.49802479961327895,
+        "val_loss": 1.2300915718078613,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.4719973824624987,
+        "val_loss": 1.0980861186981201,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.5012961901228739,
+        "val_loss": 1.2796449661254883,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.47795228027786174,
+        "val_loss": 1.087287187576294,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.5138387687880116,
+        "val_loss": 1.1399697065353394,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.4920718816067653,
+        "val_loss": 1.2812418937683105,
+        "val_acc": 0.5709342360496521
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.536772228030533,
+        "val_loss": 1.2053072452545166,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.48273935366958626,
+        "val_loss": 1.217759132385254,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.4752925702337189,
+        "val_loss": 1.2056975364685059,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.4787878787878788,
+        "val_loss": 1.1764787435531616,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.5209515137207289,
+        "val_loss": 1.1576728820800781,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.49183781334944127,
+        "val_loss": 1.2426116466522217,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.5057446067024159,
+        "val_loss": 1.1872197389602661,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.5222188664049129,
+        "val_loss": 1.2850261926651,
+        "val_acc": 0.5190311670303345
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.5022854766000022,
+        "val_loss": 1.3547831773757935,
+        "val_acc": 0.4010416567325592
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.5388251283600121,
+        "val_loss": 1.245690107345581,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "BaselineCNN"
+        },
+        "roc_auc": 0.4804436050498578,
+        "val_loss": 1.3781672716140747,
+        "val_acc": 0.2604166567325592
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.5154837410651364,
+        "val_loss": 0.6694278717041016,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.4943329623509044,
+        "val_loss": 0.6511960625648499,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.5248414376321353,
+        "val_loss": 0.6712995171546936,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.5255179701640192,
+        "val_loss": 0.6605733036994934,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.4981576562971912,
+        "val_loss": 0.7317383289337158,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.5136083100064078,
+        "val_loss": 0.7335445284843445,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.5075279371791,
+        "val_loss": 0.7975921034812927,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.5097804458534283,
+        "val_loss": 0.8155112266540527,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.5003523608174771,
+        "val_loss": 0.710338294506073,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.4952682877474621,
+        "val_loss": 0.7052192091941833,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.5150634249471459,
+        "val_loss": 0.7215654253959656,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.4870965566085461,
+        "val_loss": 0.7447221279144287,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.5394392429276149,
+        "val_loss": 0.7759636640548706,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.48640293188537764,
+        "val_loss": 0.8233140110969543,
+        "val_acc": 0.5208333134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.47694805194805195,
+        "val_loss": 0.7651194930076599,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.5160129506593369,
+        "val_loss": 0.8056477904319763,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.5240964461894695,
+        "val_loss": 0.669366717338562,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.482011848953942,
+        "val_loss": 0.6611353754997253,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.48160676532769553,
+        "val_loss": 0.675375759601593,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.4949715018043236,
+        "val_loss": 0.6695199608802795,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.48207993556830764,
+        "val_loss": 0.7905302047729492,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.5244477420660348,
+        "val_loss": 0.76847904920578,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.5162564180006041,
+        "val_loss": 0.7593201994895935,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.5047598169820017,
+        "val_loss": 0.7672078013420105,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.48337360314104494,
+        "val_loss": 0.7147823572158813,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.49861837149955585,
+        "val_loss": 0.705798864364624,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.4923336353568912,
+        "val_loss": 0.7388308048248291,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.5014479556619789,
+        "val_loss": 0.7630307078361511,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.4836504580690627,
+        "val_loss": 0.7399775385856628,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.5101570492282441,
+        "val_loss": 0.8698835372924805,
+        "val_acc": 0.2604166567325592
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.5208270411758784,
+        "val_loss": 0.8295968174934387,
+        "val_acc": 0.28373703360557556
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "SimplerCNN"
+        },
+        "roc_auc": 0.5295065933695322,
+        "val_loss": 0.8544862866401672,
+        "val_acc": 0.2604166567325592
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.47529950669485554,
+        "val_loss": 1.585936188697815,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.5143086798646476,
+        "val_loss": 1.9502395391464233,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.5034078324775999,
+        "val_loss": 2.3236825466156006,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.49843625285263005,
+        "val_loss": 3.0398788452148438,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.49369777509312385,
+        "val_loss": 3.5275819301605225,
+        "val_acc": 0.32871973514556885
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.5005115060762425,
+        "val_loss": 3.305903673171997,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.5009010369475486,
+        "val_loss": 3.367631196975708,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.49945139568086516,
+        "val_loss": 3.3120899200439453,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.48821101379240917,
+        "val_loss": 3.180196523666382,
+        "val_acc": 0.6782007217407227
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.46612930423931737,
+        "val_loss": 3.1875650882720947,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.5010419812745394,
+        "val_loss": 3.202799081802368,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.5039043090171214,
+        "val_loss": 3.2302920818328857,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.47445384073291047,
+        "val_loss": 3.4587700366973877,
+        "val_acc": 0.4740484356880188
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.4644418962823064,
+        "val_loss": 3.32028865814209,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.5040320144971308,
+        "val_loss": 3.4304392337799072,
+        "val_acc": 0.4844290614128113
+    },
+    {
+        "config": {
+            "dropout_rate": 0.5,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.5243555585533934,
+        "val_loss": 3.3613243103027344,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.4754404510218464,
+        "val_loss": 1.7457894086837769,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.4746236776724787,
+        "val_loss": 2.1679136753082275,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.518806000201349,
+        "val_loss": 2.2776973247528076,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.507977246411026,
+        "val_loss": 2.7950589656829834,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.5088492902446391,
+        "val_loss": 3.3825571537017822,
+        "val_acc": 0.612456738948822
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.47321394444257076,
+        "val_loss": 3.314378023147583,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.5239957716701903,
+        "val_loss": 3.328125238418579,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.478965296280058,
+        "val_loss": 3.3096811771392822,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.49867613007147893,
+        "val_loss": 3.291905403137207,
+        "val_acc": 0.508650541305542
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.5196688138679978,
+        "val_loss": 3.3926875591278076,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.531309775495822,
+        "val_loss": 3.2376341819763184,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "adam",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.4915562150798736,
+        "val_loss": 3.2299489974975586,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.4,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.5244941105406222,
+        "val_loss": 3.3742082118988037,
+        "val_acc": 0.6643598675727844
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 32,
+            "train_test_split_ratio": 0.6,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.5168662102458602,
+        "val_loss": 3.3156120777130127,
+        "val_acc": 0.7395833134651184
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.4,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.5137823416893184,
+        "val_loss": 3.3267874717712402,
+        "val_acc": 0.7162629961967468
+    },
+    {
+        "config": {
+            "dropout_rate": 0.7,
+            "learning_rate": 0.0001,
+            "optimizer": "sgd",
+            "batch_size": 64,
+            "train_test_split_ratio": 0.6,
+            "model_name": "MoreAdvancedCNN"
+        },
+        "roc_auc": 0.4805571481568918,
+        "val_loss": 3.34126353263855,
+        "val_acc": 0.7395833134651184
+    }
+]

@@ -2,12 +2,14 @@ import os
 import numpy as np
 import sys
 import tensorflow as tf
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, LearningRateScheduler, TensorBoard
+from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler, TensorBoard, Callback
 from tensorflow.keras.optimizers import Adam
 from sklearn.utils.class_weight import compute_class_weight
+from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
 from datetime import datetime
 from model import CNNModel
+import json
 
 
 class DataLoader:
@@ -56,6 +58,54 @@ class DataLoader:
         return np.array(X, dtype=np.float32), np.array(y, dtype=np.float32)
 
 
+class ROCAUCCallback(Callback):
+    """Custom callback to calculate and store ROC AUC after each epoch."""
+
+    def __init__(self, train_data, val_data, output_dir):
+        """
+        Initialize the ROCAUCCallback.
+
+        Parameters:
+        - train_data: Tuple of training features and labels.
+        - val_data: Tuple of validation features and labels.
+        - output_dir: Directory to save ROC AUC results.
+        """
+        super().__init__()
+        self.train_data = train_data
+        self.val_data = val_data
+        self.output_dir = output_dir
+        self.roc_auc_scores = {"train": [], "val": []}
+
+    def on_epoch_end(self, epoch, logs=None):
+        """
+        Calculate and store the ROC AUC scores at the end of each epoch.
+
+        Parameters:
+        - epoch: Current epoch number.
+        - logs: Dictionary of logs for the current epoch (unused here).
+        """
+        train_preds = self.model.predict(self.train_data[0])
+        val_preds = self.model.predict(self.val_data[0])
+
+        # Calculate ROC AUC
+        train_roc_auc = roc_auc_score(self.train_data[1], train_preds)
+        val_roc_auc = roc_auc_score(self.val_data[1], val_preds)
+
+        # Append scores
+        self.roc_auc_scores["train"].append(train_roc_auc)
+        self.roc_auc_scores["val"].append(val_roc_auc)
+
+        # Log scores
+        print(f"Epoch {epoch + 1} - Train ROC AUC: {train_roc_auc:.4f}, Val ROC AUC: {val_roc_auc:.4f}")
+
+    def on_train_end(self, logs=None):
+        """
+        Save ROC AUC results to a JSON file at the end of training.
+        """
+        os.makedirs(self.output_dir, exist_ok=True)
+        with open(os.path.join(self.output_dir, "roc_auc_scores.json"), "w") as f:
+            json.dump(self.roc_auc_scores, f)
+
 
 class ModelTrainer:
     """Handles the training and evaluation of a CNN model."""
@@ -97,21 +147,37 @@ class ModelTrainer:
         dataset = dataset.map(lambda X, y: (tf.cast(X, tf.float32), tf.cast(y, tf.float32)))
         return dataset
 
-    def setup_callbacks(self):
-        """Setup callbacks for training."""
-        early_stopping = EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True)
+    def setup_callbacks(self, train_data, val_data):
+        """
+        Setup training callbacks including ROC AUC callback.
+
+        Parameters:
+        - train_data: Training data to be passed to ROC AUC callback.
+        - val_data: Validation data to be passed to ROC AUC callback.
+
+        Returns:
+        - A list of configured callbacks.
+        """
         checkpoint = ModelCheckpoint(
             filepath=os.path.join(self.output_dir, 'best_model.keras'),
             monitor='val_loss',
             save_best_only=True
         )
-        lr_scheduler = LearningRateScheduler(lambda epoch, lr: lr * 0.9 if epoch > 10 else lr)
         log_dir = os.path.join(self.log_dir, datetime.now().strftime("%Y%m%d-%H%M%S"))
         tensorboard_callback = TensorBoard(log_dir=log_dir, histogram_freq=1)
 
-        return [early_stopping, checkpoint, lr_scheduler, tensorboard_callback]
+        # Custom ROC AUC callback
+        roc_auc_callback = ROCAUCCallback(train_data=train_data, val_data=val_data, output_dir=self.output_dir)
 
-    def train(self, X_train, y_train, X_val, y_val, batch_size=32, epochs=50, additional_callbacks=None):
+        # Early stopping (commented out for running full 50 epochs)
+        # early_stopping = EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True)
+
+        # Return callbacks
+        return [checkpoint, tensorboard_callback, roc_auc_callback]
+        # Uncomment the next line for early stopping:
+        # return [checkpoint, tensorboard_callback, roc_auc_callback, early_stopping]
+
+    def train(self, X_train, y_train, X_val, y_val, batch_size=32, epochs=50):
         """
         Train the model.
 
@@ -128,13 +194,8 @@ class ModelTrainer:
         # Compute class weights
         class_weights = self.compute_class_weights(y_train)
 
-        # Setup callbacks
-        callbacks = self.setup_callbacks()
-
-        # Add additional callbacks if provided
-        if additional_callbacks:
-            callbacks.extend(additional_callbacks)
-
+        # Setup callbacks with training and validation data
+        callbacks = self.setup_callbacks(train_data=(X_train, y_train), val_data=(X_val, y_val))
 
         # Train the model
         self.model.fit(
@@ -165,7 +226,7 @@ def main():
     """Main function to execute the training pipeline."""
     # Directories
     train_dir = './data/spectrograms/train'
-    output_dir = './outputs'
+    output_dir = './train_results'
     log_dir = './logs'
 
     # Load data

@@ -13,16 +13,18 @@ from model import CNNModel
 class DataLoader:
     """Handles loading and preprocessing of spectrogram image data."""
 
-    def __init__(self, spectrogram_dir, target_size=(128, 128)):
+    def __init__(self, spectrogram_dir, target_size=(128, 128), chunk_size=None):
         """
         Initialize the DataLoader.
 
         Parameters:
         - spectrogram_dir: Directory containing spectrogram images.
         - target_size: Target size to resize the spectrogram images.
+        - chunk_size: Optional size for randomly cropping spectrogram images (default is None).
         """
         self.spectrogram_dir = spectrogram_dir
         self.target_size = target_size
+        self.chunk_size = chunk_size
 
     def load_data(self):
         """
@@ -42,10 +44,17 @@ class DataLoader:
                         image_path, color_mode='grayscale', target_size=self.target_size
                     )
                     image_array = tf.keras.preprocessing.image.img_to_array(image) / 255.0
+
+                    # Apply random cropping if chunk_size is provided
+                    if self.chunk_size:
+                        height, width = self.chunk_size
+                        image_array = tf.image.random_crop(image_array, size=(height, width, 1))
+
                     X.append(image_array)
                     y.append(1 if class_name == 'allowed' else 0)
 
         return np.array(X, dtype=np.float32), np.array(y, dtype=np.float32)
+
 
 
 class ModelTrainer:
@@ -102,7 +111,7 @@ class ModelTrainer:
 
         return [early_stopping, checkpoint, lr_scheduler, tensorboard_callback]
 
-    def train(self, X_train, y_train, X_val, y_val, batch_size=32, epochs=50):
+    def train(self, X_train, y_train, X_val, y_val, batch_size=32, epochs=50, additional_callbacks=None):
         """
         Train the model.
 
@@ -121,6 +130,11 @@ class ModelTrainer:
 
         # Setup callbacks
         callbacks = self.setup_callbacks()
+
+        # Add additional callbacks if provided
+        if additional_callbacks:
+            callbacks.extend(additional_callbacks)
+
 
         # Train the model
         self.model.fit(

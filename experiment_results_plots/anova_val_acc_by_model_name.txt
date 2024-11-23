@@ -1,0 +1,2 @@
+ANOVA Test for val_acc grouped by model_name
+F-statistic: 0.8076, p-value: 4.4905e-01

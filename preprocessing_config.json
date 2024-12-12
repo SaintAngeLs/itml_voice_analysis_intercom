@@ -1,0 +1,14 @@
+{
+    "data_path": "data",
+    "output_dir": "kaggle-speech-recognition",
+    "dirs": ["nine", "six", "house", "dog", "tree", "bird", "go", "one", "on",
+             "marvin", "down", "happy", "two", "bed", "left", "four", "right", "yes", "no", "zero",
+             "up", "three", "off", "stop", "eight", "sheila", "five", "wow", "seven", "cat"],
+
+    "augmentations": {
+        "overlap_factor": 0.0,
+        "target_height": 256,
+        "mute_sections": false,
+        "shuffle": true
+    }
+}

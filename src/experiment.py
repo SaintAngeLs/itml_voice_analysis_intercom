@@ -8,8 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
 from datetime import datetime
 from model import CNNModel, CNNModelSimpler, CNNModelMoreAdvanced
-from train import DataLoader, ModelTrainer
-
+from train import DataLoader, ModelTrainer, LayerChangeTracker
 
 class ExperimentLogger:
     """Logs experimental results and configurations."""
@@ -77,7 +76,6 @@ class ExperimentLogger:
         with open(results_file, "w") as f:
             json.dump(self.results, f, indent=4)
 
-
 class ExperimentRunner:
     """Handles running experiments with varying parameters and models."""
 
@@ -137,6 +135,7 @@ class ExperimentRunner:
                 # Configure TensorBoard callback with a unique log directory
                 log_dir = os.path.join("./logs", model_name, self.logger.config_to_filename(config))
                 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+                layer_tracker = LayerChangeTracker(reinit_layers=['conv2d_27', 'conv2d_34', 'dense_6'], reinit_epoch=25)
 
                 # Train the model and capture history
                 history = model.fit(
@@ -144,7 +143,7 @@ class ExperimentRunner:
                     validation_data=val_dataset,
                     epochs=10,
                     verbose=1,
-                    callbacks=[tensorboard_callback]
+                    callbacks=[tensorboard_callback, layer_tracker]
                 ).history
 
                 # Save training history
@@ -162,11 +161,28 @@ class ExperimentRunner:
                 # Save the model
                 model.save(os.path.join("./outputs", model_name, self.logger.config_to_filename(config) + "_model.h5"))
 
+                # Save weight changes and recovery epochs
+                weight_changes = layer_tracker.get_weight_changes()
+                recovery_epochs = layer_tracker.get_recovery_epochs()
+                changes_file = os.path.join(self.logger.output_dir, self.logger.config_to_filename(config) + "_changes.json")
+                with open(changes_file, "w") as wf:
+                    json.dump({"weight_changes": self.convert_to_serializable(weight_changes), "recovery_epochs": self.convert_to_serializable(recovery_epochs)}, wf, indent=4)
+
+
         self.logger.save_results()
+
+    def convert_to_serializable(self, obj):
+        if isinstance(obj, np.generic):
+            return obj.item()  # Converts numpy datatype to native Python datatype
+        elif isinstance(obj, dict):
+            return {k: self.convert_to_serializable(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self.convert_to_serializable(v) for v in obj]
+        else:
+            return obj
 
 
 if __name__ == "__main__":
-    # Define the parameter grid for experimentation
     param_grid = {
         "dropout_rate": [0.5, 0.7],
         "learning_rate": [0.001, 0.0001],
@@ -174,8 +190,6 @@ if __name__ == "__main__":
         "batch_size": [32, 64],
         "train_test_split_ratio": [0.4, 0.6],
     }
-
-    # Initialize components
     dataloader = DataLoader(spectrogram_dir="./data/spectrograms/train", target_size=(256, 256), chunk_size=(128, 128))
     model_builders = {
         "BaselineCNN": CNNModel(input_shape=(128, 128, 1), num_classes=1),
@@ -184,7 +198,5 @@ if __name__ == "__main__":
     }
     trainer = ModelTrainer(model=None, output_dir="./outputs", log_dir="./logs")
     logger = ExperimentLogger(output_dir="./experiment_results")
-
-    # Run experiments
     experiment_runner = ExperimentRunner(model_builders, dataloader, trainer, logger)
     experiment_runner.run_experiments(param_grid)

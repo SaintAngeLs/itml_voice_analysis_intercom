@@ -106,6 +106,46 @@ class ROCAUCCallback(Callback):
         with open(os.path.join(self.output_dir, "roc_auc_scores.json"), "w") as f:
             json.dump(self.roc_auc_scores, f)
 
+class LayerChangeTracker(Callback):
+    """Tracks changes in the weights of specified layers during training."""
+    def __init__(self, reinit_layers=None, reinit_epoch=25, epsilon=0.01):
+        super().__init__()
+        self.reinit_layers = reinit_layers if reinit_layers else []
+        self.reinit_epoch = reinit_epoch
+        self.epsilon = epsilon
+        self.initial_weights = {}
+        self.weight_changes = []
+        self.recovery_epochs = {}
+
+    def on_train_begin(self, logs=None):
+        self.initial_weights = {layer.name: [np.copy(w) for w in layer.get_weights()] for layer in self.model.layers if len(layer.get_weights()) > 0}
+
+    def on_epoch_end(self, epoch, logs=None):
+        epoch_changes = {}
+        for layer in self.model.layers:
+            if len(layer.get_weights()) > 0:
+                initial_weights = self.initial_weights.get(layer.name, [])
+                current_weights = layer.get_weights()
+                changes = [np.linalg.norm(current - initial) for current, initial in zip(current_weights, initial_weights)]
+                epoch_changes[layer.name] = np.sum(changes)
+        self.weight_changes.append(epoch_changes)
+        if epoch + 1 == self.reinit_epoch:
+            self._reinitialize_layers()
+        if epoch >= self.reinit_epoch:
+            for layer in self.reinit_layers:
+                if self.recovery_epochs.get(layer) is None and epoch_changes[layer] < self.epsilon:
+                    self.recovery_epochs[layer] = epoch - self.reinit_epoch
+
+    def _reinitialize_layers(self):
+        for layer in self.model.layers:
+            if layer.name in self.reinit_layers and not isinstance(layer, tf.keras.layers.BatchNormalization):
+                layer.set_weights([layer.kernel_initializer(shape=w.shape) for w in layer.get_weights()])
+
+    def get_weight_changes(self):
+        return self.weight_changes
+
+    def get_recovery_epochs(self):
+        return self.recovery_epochs
 
 class ModelTrainer:
     """Handles the training and evaluation of a CNN model."""
@@ -166,8 +206,9 @@ class ModelTrainer:
         log_dir = os.path.join(self.log_dir, datetime.now().strftime("%Y%m%d-%H%M%S"))
         tensorboard_callback = TensorBoard(log_dir=log_dir, histogram_freq=1)
 
-        # Custom ROC AUC callback
         roc_auc_callback = ROCAUCCallback(train_data=train_data, val_data=val_data, output_dir=self.output_dir)
+
+        layer_tracker = LayerChangeTracker(reinit_layers=['conv2d_27', 'conv2d_34', 'dense_6'], reinit_epoch=25)
 
         # Early stopping (commented out for running full 50 epochs)
         # early_stopping = EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True)
